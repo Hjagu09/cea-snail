@@ -1,8 +1,9 @@
 import lexer
 
 let prog = """
-a + 2.35 * b² - 10_000
-('a' + 'b') * 2
+'a' + a * 10|||000
+a * b * c × d
+'hej * 100_000.464_163_134
 """
 print(prog)
 
@@ -10,7 +11,7 @@ print("----------")
 
 let lexer = lex.lexer{prog}
 
-while not lexer.eof() and lexer.peek() != nil:
+while not lexer.eof():
 	let next = lexer.next()
 	if next:
 		print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
@@ -21,3 +22,6 @@ if next:
 	print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
 else:
 	print("NIL")
+
+lexer.reset()
+

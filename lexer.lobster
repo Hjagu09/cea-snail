@@ -103,9 +103,20 @@ class lexer:
 		var tok = switch prog.at(pos + offset):
 			case '\'', '\"':
 				let delim = prog.at(pos + offset)
+				let start_i = offset + pos
 				offset++
 				var name_utf8 = []
 				while prog.at(pos + offset) != delim:
+					if prog.at(pos + offset) == '\n' or prog.at(pos + offset) == 0:
+						if move:
+							error(
+								"unmatched string opening ({unicode_to_string([delim])})",
+								 start_i,
+								 name_utf8.length() + 1
+							)
+							offset += 1
+							pos += offset
+						return nil
 					name_utf8.push(prog.at(pos + offset))
 					offset++
 				let name = unicode_to_string(name_utf8)
@@ -177,14 +188,48 @@ class lexer:
 				tok = float_token {FLOAT_LITERAL, pos + offset - len, len, number}
 			else:
 				let number = string_to_int(number_string)
-				tok = int_token {FLOAT_LITERAL, pos + offset - len, len, number}
-		
+				tok = int_token {INT_LITERAL, pos + offset - len, len, number}
+
 		if move:
+			if tok == nil:
+				let begin = offset + pos
+				let new_of, size = skip_errors(offset)
+				offset = new_of
+				error("unexpected character(s)", begin, size)
 			pos += offset
 		return tok
+
+	def skip_errors(offset) -> int, int:
+		var size = 0
+		while gen_next_token(false, offset) == nil:
+			offset++
+			size++
+		return offset, size
+
+	def error(e, at, size):
+		has_error = true
+		var line_n = 1
+		var col = 1
+		for(at) i:
+			col++
+			if prog != nil and prog[i] == '\n':
+				line_n++
+				col = 1
+		let lines = prog_string.tokenize("\n", "")
+		let line = lines[line_n - 1]
+		print("\nERROR: {e} at {string(line_n)}:{string(col)}")
+		print("    {string(line_n)}| {line}")
+		let start_buffer = " ".repeat_string(6 + string(line_n).length())
+		let at_buffer = " ".repeat_string(col - 1)
+		let arrow_line = "-".repeat_string(size - 1)
+		print("{start_buffer}{at_buffer}^{arrow_line} here")
 
 	def next() -> token?:
 		return gen_next_token(true)
 
 	def peek() -> token?:
 		return gen_next_token(false)
+	
+	def reset():
+		prog = nil
+		pos = 0
