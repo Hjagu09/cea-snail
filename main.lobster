@@ -8,20 +8,23 @@ a * b * c × d
 print(prog)
 
 print("----------")
+let debug = get_line("debug (Y/*): ") == "Y"
 
 let lexer = lex.lexer{prog}
 
 while not lexer.eof():
 	let next = lexer.next()
+	if debug:
+		if next:
+			print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
+		else:
+			print("NIL")
+let next = lexer.next()
+if debug:
 	if next:
 		print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
 	else:
 		print("NIL")
-let next = lexer.next()
-if next:
-	print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
-else:
-	print("NIL")
 
 lexer.reset()
 
