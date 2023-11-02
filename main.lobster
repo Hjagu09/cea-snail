@@ -1,14 +1,13 @@
+import parser
 import lexer
 
 let prog = """
-'a' + a * 10|||000
-a * b * c × d
-'hej * 100_000.464_163_134
+3 * (2 + 1)²
 """
-print(prog)
-
-print("----------")
 let debug = get_line("debug (Y/*): ") == "Y"
+if debug:
+	print(prog)
+	print("----------")
 
 let lexer = lex.lexer{prog}
 
@@ -27,4 +26,9 @@ if debug:
 		print("NIL")
 
 lexer.reset()
-
+if not lexer.has_error:
+	let parser = par.parser{lexer}
+	let root = parser.parse()
+	if root != nil and debug:
+		print("----------")
+		print(root.str())

@@ -11,7 +11,8 @@ enum token_types:
 	LPAR,
 	RPAR,
 	IDENT,
-	STRING_LITERAL
+	LF,
+	STRING_LITERAL,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -31,6 +32,7 @@ def token_type_string(type: int) -> string:
 		case IDENT: "IDENT"
 		case STRING_LITERAL: "STRING_LITERAL"
 		case EOF: "EOF"
+		case LF: "LF"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -151,9 +153,16 @@ class lexer:
 			case pow_3:
 				offset++
 				int_token {POWER, pos + offset - 1, 1, 3 /* cube */}
-			case ' ', '\t', '\n':
+			case ' ', '\t':
 				offset++
 				return gen_next_token(move, offset)
+			case '\n':
+				let start = offset
+				while (prog.at(pos + offset) == '\n' or 
+					prog.at(pos + offset) == ' ' or
+					prog.at(pos + offset) == '\t'):
+					offset++
+				token {LF, start, 1}
 			default:
 				nil
 
@@ -206,8 +215,10 @@ class lexer:
 			size++
 		return offset, size
 
-	def error(e, at, size):
-		has_error = true
+	def error(e: string, at: int, size:int, parser: bool = false) -> void:
+		if not parser:
+			has_error = true
+
 		var line_n = 1
 		var col = 1
 		for(at) i:
@@ -215,21 +226,55 @@ class lexer:
 			if prog != nil and prog[i] == '\n':
 				line_n++
 				col = 1
+
+		var end_line_n = 1
+		var end_col = 1
+		for(at + size - 1) i:
+			end_col++
+			if prog != nil and prog[i] == '\n':
+				end_line_n++
+				end_col = 1
+
 		let lines = prog_string.tokenize("\n", "")
-		let line = lines[line_n - 1]
-		print("\nERROR: {e} at {string(line_n)}:{string(col)}")
-		print("    {string(line_n)}| {line}")
-		let start_buffer = " ".repeat_string(6 + string(line_n).length())
-		let at_buffer = " ".repeat_string(col - 1)
-		let arrow_line = "-".repeat_string(size - 1)
-		print("{start_buffer}{at_buffer}^{arrow_line} here")
+
+		print("\nERROR: {e} at {string(line_n)}:{string(col)} to {string(end_line_n)}:{string(end_col)}")
+		
+		if end_line_n == line_n:
+			let line = lines[line_n - 1]
+			let error_line = "    {string(line_n)}| {line}"
+			print(error_line)
+			let start_buffer = " ".repeat_string(6 + string(line_n).length())
+			let at_buffer = " ".repeat_string(col - 1)
+			let arrow_line = "-".repeat_string(size - 1)
+			var arrow = "{start_buffer}{at_buffer}^{arrow_line}"
+			print("{arrow} here")
+		else:
+			for(end_line_n - line_n + 1) l:
+				let ln = l + line_n
+				let line = lines[ln - 1]
+				let error_line = "    {string(ln)}| {line}"
+				print(error_line)
+		
 
 	def next() -> token?:
 		return gen_next_token(true)
 
 	def peek() -> token?:
 		return gen_next_token(false)
-	
+
+	// kalla altid på funktionen så här:
+	// error = consume(...) or error
+	// inte:
+	// error = error or consume(...)
+	def consume(type: int, error: string) -> bool, token?:
+		let tok = next()
+		if tok != nil and tok.type == type:
+			return true, tok
+		elif tok != nil:
+			this.error(error, tok.offset, tok.length, true)
+		else:
+			print("\nERROR: {error}")
+		return false, tok
 	def reset():
 		prog = nil
 		pos = 0
