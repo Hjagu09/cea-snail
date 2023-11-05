@@ -1,8 +1,9 @@
 import parser
 import lexer
+import cpp
 
 let prog = """
-3 * (2 + 1)²
+'a' + ('b' * 2) + 'a'
 """
 let debug = get_line("debug (Y/*): ") == "Y"
 if debug:
@@ -11,24 +12,31 @@ if debug:
 
 let lexer = lex.lexer{prog}
 
-while not lexer.eof():
-	let next = lexer.next()
-	if debug:
+if debug: // kör lexern en extra gång och printa alla tokens
+	while not lexer.eof():
+		let next = lexer.next()
 		if next:
 			print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
 		else:
 			print("NIL")
-let next = lexer.next()
-if debug:
+	let next = lexer.next()
 	if next:
 		print("{lex.token_type_string(next.type)}: {string(next)} at {lexer.pos}")
 	else:
 		print("NIL")
+	lexer.reset()
 
-lexer.reset()
-if not lexer.has_error:
-	let parser = par.parser{lexer}
-	let root = parser.parse()
-	if root != nil and debug:
-		print("----------")
-		print(root.str())
+let parser = par.parser{lexer}
+let root = parser.parse()
+if root != nil and debug:
+	print("----------")
+	print(root.str())
+
+if root == nil:
+	set_exit_code(1)
+	return from program
+
+let cgen = codegen.to_cpp{root}
+let cpp_code = cgen.generate().get_code()
+print("```\n{cpp_code}\n```")
+write_file("a.out.cpp", cpp_code)

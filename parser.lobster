@@ -13,7 +13,7 @@ class parser:
 			while true:
 				let next = lexer.next()
 				if next != nil and next.type == lex.EOF:
-					return AST_root{[expr]}
+					return AST_root{[AST_expr{expr}]}
 
 				elif next != nil and next.type != lex.LF:
 					let start = next.offset
@@ -80,6 +80,8 @@ class parser:
 				return AST_float_literal {tok.value}
 			elif tok.type == lex.IDENT and tok is lex.string_token:
 				return AST_var{tok.value}
+			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
+				return AST_string_literal{tok.value}
 			elif tok.type == lex.LPAR:
 				let expr = add()
 				if expr == nil:

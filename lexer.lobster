@@ -216,9 +216,6 @@ class lexer:
 		return offset, size
 
 	def error(e: string, at: int, size:int, parser: bool = false) -> void:
-		if not parser:
-			has_error = true
-
 		var line_n = 1
 		var col = 1
 		for(at) i:
@@ -254,6 +251,14 @@ class lexer:
 				let line = lines[ln - 1]
 				let error_line = "    {string(ln)}| {line}"
 				print(error_line)
+
+		if not parser:
+			has_error = true
+			pos = at + size
+			while not eof():
+				next()
+			set_exit_code(1)
+			return from program // FIXME
 		
 
 	def next() -> token?:

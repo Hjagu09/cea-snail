@@ -88,3 +88,10 @@ class AST_var : AST_node
 		out += " name " + string(name)
 		out += "\n"
 		return out
+class AST_expr : AST_node
+	body: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "expr:"
+		out += "\n"
+		out += body.str(ind + 1) + ""
+		return out

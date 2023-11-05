@@ -10,7 +10,8 @@
 		{ "name": "pow", "childs": [["base"], ["exp"]], "const": []},
 		{ "name": "group", "childs": [["body"]], "const": []},
 		{ "name": "root", "childs": [["body", "*node"]], "const": []},
-		{ "name": "var", "childs": [], "const": [["name", "string"]]}
+		{ "name": "var", "childs": [], "const": [["name", "string"]]},
+		{ "name": "expr", "childs": [["body"]], "const": []}
 	],
 	"base": "node",
 	"name_pre": "AST_"
