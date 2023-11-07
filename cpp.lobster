@@ -1,4 +1,6 @@
 import codegen
+import from ".."
+import types 
 namespace codegen
 
 class cpp_code_builder:
@@ -103,8 +105,13 @@ class to_cpp : codegen
 		return eval(node.left) + " + " + eval(node.right) 
 	def visit_sub(node: AST_sub) -> string:
 			return eval(node.left) + " - " + eval(node.right) 
-	def visit_mult(node: AST_mult) -> string: // hantera saker som `'a'+'b'*2+'a'`
-			return eval(node.left) + " * " + eval(node.right) 
+	def visit_mult(node: AST_mult) -> string:
+			if node.type_left == STRING:
+				return "repeat({eval(node.right)}, {eval(node.left)})"
+			if node.type_right == STRING:
+				return "repeat({eval(node.left)}, {eval(node.right)})"
+			else:
+				return eval(node.left) + " * " + eval(node.right) 
 	def visit_div(node: AST_div) -> string:
 			return eval(node.left) + " / " + eval(node.right) 
 	def visit_pow(node: AST_pow) -> string:

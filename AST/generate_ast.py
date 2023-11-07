@@ -16,9 +16,14 @@ with open("AST.json") as file:
 		]
 		first = True
 		for const in node["const"]:
-			nodes.append(
-				f"	{const[0]}: {const[1]}"
-			)
+			if len(const) == 2:
+				nodes.append(
+					f"	{const[0]}: {const[1]}"
+				)
+			else:
+				nodes.append(
+					f"	{const[0]}: {const[1]} = {const[2]}"
+				)
 			comma = ""
 			if not first:
 				comma = ","

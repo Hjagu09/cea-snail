@@ -1,9 +1,13 @@
 import parser
 import lexer
 import cpp
+import from "./ast_pass/"
+import type_pass
+import pass_man
+import types
 
 let prog = """
-'a' + ('b' * 2) + 'a'
+'a' + 'b' * (1 + 1) + 'a'
 """
 let debug = get_line("debug (Y/*): ") == "Y"
 if debug:
@@ -35,6 +39,17 @@ if root != nil and debug:
 if root == nil:
 	set_exit_code(1)
 	return from program
+
+let analyser = pass_man{[
+	type_pass{}
+]}
+let analyser_result = analyser.run_passes(root, debug)
+if not all(analyser_result):
+	set_exit_code(1)
+	return from program
+if root != nil and debug:
+	print("----------")
+	print(root.str())
 
 let cgen = codegen.to_cpp{root}
 let cpp_code = cgen.generate().get_code()
