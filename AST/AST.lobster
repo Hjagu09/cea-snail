@@ -78,6 +78,15 @@ class AST_pow : AST_node
 		out += base.str(ind + 1) + ""
 		out += exp.str(ind + 1) + ""
 		return out
+class AST_unary_sub : AST_node
+	type: int = -1
+	body: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "unary_sub:"
+		out += " type " + string(type)
+		out += "\n"
+		out += body.str(ind + 1) + ""
+		return out
 class AST_group : AST_node
 	type: int = -1
 	body: AST_node

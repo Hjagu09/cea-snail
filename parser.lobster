@@ -82,6 +82,12 @@ class parser:
 				return AST_var{tok.value}
 			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
 				return AST_string_literal{tok.value}
+			elif tok.type == lex.MINUS:
+				let next = value()
+				if next != nil:
+					return AST_unary_sub{next}
+				else:
+					return nil
 			elif tok.type == lex.LPAR:
 				let expr = add()
 				if expr == nil:

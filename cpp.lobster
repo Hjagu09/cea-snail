@@ -95,6 +95,7 @@ class to_cpp : codegen
 			case AST_var: visit_var(node)
 			case AST_group: visit_group(node)
 			case AST_string_literal: visit_string(node)
+			case AST_unary_sub: visit_un_sub(node)
 			default:
 				error(node)
 				"/* ERROR */"
@@ -104,24 +105,26 @@ class to_cpp : codegen
 	def visit_add(node: AST_add) -> string:
 		return eval(node.left) + " + " + eval(node.right) 
 	def visit_sub(node: AST_sub) -> string:
-			return eval(node.left) + " - " + eval(node.right) 
+		return eval(node.left) + " - " + eval(node.right) 
 	def visit_mult(node: AST_mult) -> string:
-			if node.type_left == STRING:
-				return "repeat({eval(node.right)}, {eval(node.left)})"
-			if node.type_right == STRING:
-				return "repeat({eval(node.left)}, {eval(node.right)})"
-			else:
-				return eval(node.left) + " * " + eval(node.right) 
+		if node.type_left == STRING:
+			return "repeat({eval(node.right)}, {eval(node.left)})"
+		if node.type_right == STRING:
+			return "repeat({eval(node.left)}, {eval(node.right)})"
+		else:
+			return eval(node.left) + " * " + eval(node.right) 
 	def visit_div(node: AST_div) -> string:
-			return eval(node.left) + " / " + eval(node.right) 
+		return eval(node.left) + " / " + eval(node.right) 
 	def visit_pow(node: AST_pow) -> string:
-			return "pow(" + eval(node.base) + ", " + eval(node.exp) + ")"
+		return "pow(" + eval(node.base) + ", " + eval(node.exp) + ")"
+	def visit_un_sub(node: AST_unary_sub) -> string:
+		return "-{eval(node.body)}"
 
 	def visit_int(node: AST_int_literal) -> string:
-			return string(node.value)
+		return string(node.value)
 	def visit_float(node: AST_float_literal) -> string:
-			return string(node.value)
+		return string(node.value)
 	def visit_var(node: AST_var) -> string:
-			return string(node.name)
+		return string(node.name)
 	def visit_string(node: AST_string_literal) -> string:
-			return "std::string(\"{node.value}\")"
+		return "std::string(\"{node.value}\")"

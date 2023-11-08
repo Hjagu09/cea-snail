@@ -8,6 +8,7 @@
 		{ "name": "mult", "childs": [["left"], ["right"]], "const": [["type_left", "int", "-1"], ["type_right", "int", "-1"]]},
 		{ "name": "div", "childs": [["left"], ["right"]], "const": [["type", "int", "-1"]]},
 		{ "name": "pow", "childs": [["base"], ["exp"]], "const": [["type", "int", "-1"]]},
+		{ "name": "unary_sub", "childs": [["body"]], "const": [["type", "int", "-1"]]},
 		{ "name": "group", "childs": [["body"]], "const": [["type", "int", "-1"]]},
 		{ "name": "root", "childs": [["body", "*node"]], "const": []},
 		{ "name": "var", "childs": [], "const": [["name", "string"]]},

@@ -1,0 +1,10 @@
+program -> expr
+
+expr : term ("+" expr)*
+     | term ("-" expr)*
+
+term : factor ("*" term)*
+     | factor ("/" term)*
+
+factor : value POWER | value
+value : INT | FLOAT | IDENT | STRING | "(" expr ")" | "-" value

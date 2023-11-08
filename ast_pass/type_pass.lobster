@@ -25,6 +25,7 @@ class type_pass : ast_pass
 				node.type = visit(node.body, error)
 			case AST_group:
 				node.type = visit(node.body, error)
+			case AST_unary_sub: visit_unary(node, error)
 			case AST_float_literal: FLOAT
 			case AST_int_literal: INT
 			case AST_string_literal: STRING
@@ -107,3 +108,14 @@ class type_pass : ast_pass
 			error("internal type error (NONOP)", node)
 			return UNSET
 
+	def visit_unary(node, error) -> int:
+		if node is AST_unary_sub:
+			let type = visit(node.body, error)
+			if not type.is_num():
+				error("can only negate numbers", node.body)
+				return UNSET
+			node.type = type
+			return type
+		else:
+			error("internal type error (NONUNOP)", node)
+			return UNSET
