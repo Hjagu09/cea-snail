@@ -53,5 +53,6 @@ if root != nil and debug:
 
 let cgen = codegen.to_cpp{root}
 let cpp_code = cgen.generate().get_code()
-print("```\n{cpp_code}\n```")
+if debug:
+	print("```\n{cpp_code}\n```")
 write_file("a.out.cpp", cpp_code)
