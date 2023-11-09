@@ -29,6 +29,16 @@ class type_pass : ast_pass
 			case AST_float_literal: FLOAT
 			case AST_int_literal: INT
 			case AST_string_literal: STRING
+			case AST_bool_literal: BOOL
+			case AST_or: visit_logic(node, error)
+			case AST_and: visit_logic(node, error)
+			case AST_equal: visit_logic(node, error)
+			case AST_not_equal: visit_logic(node, error)
+			case AST_greater_equal: visit_logic(node, error)
+			case AST_less_equal: visit_logic(node, error)
+			case AST_greater: visit_logic(node, error)
+			case AST_less: visit_logic(node, error)
+			case AST_not: visit_unary(node, error)
 			default:
 				print("type_pass: unknown ast type {node}")
 				return  UNSET
@@ -116,6 +126,42 @@ class type_pass : ast_pass
 				return UNSET
 			node.type = type
 			return type
+		if node is AST_not:
+			let type = visit(node.body, error)
+			if type != BOOL:
+				error("can only invert booleans", node.body)
+			return BOOL
 		else:
 			error("internal type error (NONUNOP)", node)
 			return UNSET
+
+	def visit_logic(node, error) -> int:
+		if node is AST_or or node is AST_and:
+			if visit(node.left, error) != BOOL:
+				error("can\'t and/or non bool", node.left)
+			if visit(node.right, error) != BOOL:
+				error("can\'t and/or non bool", node.right)
+
+		elif node is AST_equal or node is AST_not_equal:
+			let left = visit(node.left, error)
+			let right = visit(node.right, error)
+			if left != right:
+				error("can\'t compare two difrent types", node.right)
+
+		elif (node is AST_greater_equal or
+			node is AST_less_equal or
+			node is AST_greater or
+			node is AST_less):
+			let left = visit(node.left, error)
+			let right = visit(node.right, error)
+			if not left.is_num():
+				error("can\'t do less/greater then comparison on non-number", node.left)
+			if not right.is_num():
+				error("can\'t do less/greater then comparison on non-number", node.right)
+			if left != right:
+				error("can\'t compare two difrent types", node.right)
+			
+		else:
+			error("internal type error (NOLOGIC)", node)
+		
+		return BOOL

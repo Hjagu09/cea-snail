@@ -12,7 +12,17 @@
 		{ "name": "group", "childs": [["body"]], "const": [["type", "int", "-1"]]},
 		{ "name": "root", "childs": [["body", "*node"]], "const": []},
 		{ "name": "var", "childs": [], "const": [["name", "string"]]},
-		{ "name": "expr", "childs": [["body"]], "const": [["type", "int", "-1"]]}
+		{ "name": "expr", "childs": [["body"]], "const": [["type", "int", "-1"]]},
+		{ "name": "and", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "or", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "equal", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "not_equal", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "less_equal", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "greater_equal", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "less", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "greater", "childs": [["left"], ["right"]], "const": []},
+		{ "name": "bool_literal", "childs": [], "const": [["value", "bool"]]},
+		{ "name": "not", "childs": [["body"]], "const": []}
 	],
 	"base": "node",
 	"name_pre": "AST_"

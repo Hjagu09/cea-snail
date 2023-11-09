@@ -120,3 +120,89 @@ class AST_expr : AST_node
 		out += "\n"
 		out += body.str(ind + 1) + ""
 		return out
+class AST_and : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "and:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_or : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "or:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_equal : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "equal:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_not_equal : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "not_equal:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_less_equal : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "less_equal:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_greater_equal : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "greater_equal:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_less : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "less:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_greater : AST_node
+	left: AST_node
+	right: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "greater:"
+		out += "\n"
+		out += left.str(ind + 1) + ""
+		out += right.str(ind + 1) + ""
+		return out
+class AST_bool_literal : AST_node
+	value: bool
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "bool_literal:"
+		out += " value " + string(value)
+		out += "\n"
+		return out
+class AST_not : AST_node
+	body: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "not:"
+		out += "\n"
+		out += body.str(ind + 1) + ""
+		return out

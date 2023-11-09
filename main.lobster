@@ -7,7 +7,7 @@ import pass_man
 import types
 
 let prog = """
-'a' + 'b' * (1 - -1) + 'a'
+not true == false and not false == (false or true)
 """
 let debug = get_line("debug (Y/*): ") == "Y"
 if debug:

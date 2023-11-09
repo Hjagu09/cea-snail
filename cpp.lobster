@@ -8,6 +8,7 @@ class cpp_code_builder:
 	prots = []
 	decs = []
 	code = []
+	var_name: int = 0
 	def func(signature, body: cpp_code_builder):
 		func(signature, body.get_code())
 	def func(signature, body: string):
@@ -37,6 +38,8 @@ class cpp_code_builder:
 		return concat_string(output, "\n\n")
 	def include(line):
 		prots.push(line)
+	def get_var_name() -> string:
+		return "__{number_to_string(var_name++, 16, 4)}__"
 
 class to_cpp : codegen
 	builder = cpp_code_builder{true}
@@ -96,25 +99,40 @@ class to_cpp : codegen
 			case AST_group: visit_group(node)
 			case AST_string_literal: visit_string(node)
 			case AST_unary_sub: visit_un_sub(node)
+			case AST_equal: visit_equal(node)
+			case AST_greater_equal: visit_greater_equal(node)
+			case AST_less_equal: visit_less_equal(node)
+			case AST_greater: visit_greater(node)
+			case AST_less: visit_less(node)
+			case AST_not_equal: visit_not_equal(node)
+			case AST_and: visit_and(node)
+			case AST_or: visit_or(node)
+			case AST_not: visit_not(node)
+			case AST_bool_literal:
+				if node.value:
+					"true"
+				else:
+					"false"
 			default:
 				error(node)
 				"/* ERROR */"
 
+	// lägg till tmp för att fixa ordning
 	def visit_group(node: AST_group) -> string:
 		return "(" + eval(node.body) + ")"
 	def visit_add(node: AST_add) -> string:
-		return eval(node.left) + " + " + eval(node.right) 
+		return "(" + eval(node.left) + " + " + eval(node.right) + ")"
 	def visit_sub(node: AST_sub) -> string:
-		return eval(node.left) + " - " + eval(node.right) 
+		return "(" + eval(node.left) + " - " + eval(node.right) + ")"
 	def visit_mult(node: AST_mult) -> string:
 		if node.type_left == STRING:
 			return "repeat({eval(node.right)}, {eval(node.left)})"
 		if node.type_right == STRING:
 			return "repeat({eval(node.left)}, {eval(node.right)})"
 		else:
-			return eval(node.left) + " * " + eval(node.right) 
+			return "(" + eval(node.left) + " * " + eval(node.right) + ")"
 	def visit_div(node: AST_div) -> string:
-		return eval(node.left) + " / " + eval(node.right) 
+		return "(" + eval(node.left) + " / " + eval(node.right) + ")"
 	def visit_pow(node: AST_pow) -> string:
 		return "pow(" + eval(node.base) + ", " + eval(node.exp) + ")"
 	def visit_un_sub(node: AST_unary_sub) -> string:
@@ -128,3 +146,30 @@ class to_cpp : codegen
 		return string(node.name)
 	def visit_string(node: AST_string_literal) -> string:
 		return "std::string(\"{node.value}\")"
+
+	def visit_not_equal(node: AST_not_equal) -> string:
+		return "({eval(node.left)} != {eval(node.right)})"
+	def visit_equal(node: AST_equal) -> string:
+		return "({eval(node.left)} == {eval(node.right)})"
+	def visit_greater(node: AST_greater) -> string:
+		return "({eval(node.left)} < {eval(node.right)})"
+	def visit_less(node: AST_less) -> string:
+		return "({eval(node.left)} < {eval(node.right)})"
+	def visit_less_equal(node: AST_less_equal) -> string:
+		return "({eval(node.left)} <= {eval(node.right)})"
+	def visit_greater_equal(node: AST_greater_equal) -> string:
+		return "({eval(node.left)} >= {eval(node.right)})"
+	// FIXME AST är backochfram
+	def visit_or(node: AST_or) -> string:
+		let left, right = builder.get_var_name(), builder.get_var_name()
+		builder.code_line("const auto {left} = {eval(node.left)};")
+		builder.code_line("const auto {right} = {eval(node.right)};")
+		return "({left} or {right})"
+	def visit_and(node: AST_and) -> string:
+		let left, right = builder.get_var_name(), builder.get_var_name()
+		builder.code_line("const auto {left} = {eval(node.left)};")
+		builder.code_line("const auto {right} = {eval(node.right)};")
+		return "({left} and {right})"
+
+	def visit_not(node: AST_not) -> string:
+		return "!({eval(node.body)})"

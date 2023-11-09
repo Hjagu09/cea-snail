@@ -3,12 +3,14 @@ import from "./AST/"
 import AST
 namespace par
 
+def ret_sig(l: AST_node, r: AST_node) -> AST_node?
+
 class parser:
 	lexer: lex.lexer
 	has_error: bool = false
 
 	def parse() -> AST_root?:
-		let expr = add()
+		let expr = top_expr()
 		if expr != nil:
 			while true:
 				let next = lexer.next()
@@ -26,7 +28,66 @@ class parser:
 		else:
 			return nil
 
-	def add() -> AST_node?:
+	def top_expr() -> AST_node?:
+		return logic()
+
+	def logic() -> AST_node?:
+		let left = comp()
+
+		let op = lexer.peek()
+		if op == nil:
+			return left
+
+		let ret = fn(ret_func: ret_sig):
+			lexer.next()
+			let right = comp()
+			if left == nil or right == nil:
+				return nil
+			else:
+				return ret_func(left, right)
+
+		switch op.type:
+			case lex.AND:
+				ret() l, r: AST_and{l, r}
+			case lex.OR:
+				ret() l, r: AST_or{l, r}
+			default:
+				return left
+	//  ↑
+	// skriv ihop dessa med en hjälp funktion
+	//  ↓
+	def comp() -> AST_node?:
+		let left = add()
+
+		let op = lexer.peek()
+		if op == nil:
+			return left
+
+		let ret = fn(ret_func: ret_sig):
+			lexer.next()
+			let right = add()
+			if left == nil or right == nil:
+				return nil from comp
+			else:
+				return ret_func(left, right) from comp
+
+		switch op.type:
+			case lex.GREATER:
+				ret() l, r: AST_greater{l, r}
+			case lex.LESS:
+				ret() l, r: AST_less{l, r}
+			case lex.GREATER_EQUAL:
+				ret() l, r: AST_greater_equal{l, r}
+			case lex.LESS_EQUAL:
+				ret() l, r: AST_less_equal{l, r}
+			case lex.EQUAL_EQUAL:
+				ret() l, r: AST_equal{l, r}
+			case lex.NOT_EQUAL:
+				ret() l, r: AST_not_equal{l, r}
+			default:
+				return left
+
+	def add() -> AST_node?: // FIXME skriv om så som comp och logic
 		let left = term()
 		let peek = lexer.peek()
 		if peek != nil and peek.type != lex.PLUS and peek.type != lex.MINUS:
@@ -44,7 +105,7 @@ class parser:
 				error("bad operator", op)
 				nil
 
-	def term() -> AST_node?:
+	def term() -> AST_node?:// FIXME skriv om så som comp och logic
 		let left = factor()
 		let peek = lexer.peek()
 		if peek != nil and peek.type != lex.SLASH and peek.type != lex.STAR:
@@ -73,7 +134,7 @@ class parser:
 	
 	def value() -> AST_node?:
 		let tok = lexer.next()
-		if tok != nil:
+		if tok != nil: // FIXME anvönd switch
 			if tok.type == lex.INT_LITERAL and tok is lex.int_token:
 				return AST_int_literal {tok.value}
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
@@ -88,8 +149,18 @@ class parser:
 					return AST_unary_sub{next}
 				else:
 					return nil
+			elif tok.type == lex.NOT:
+				let next = value()
+				if next != nil:
+					return AST_not{next}
+				else:
+					return nil
+			elif tok.type == lex.TRUE:
+				return AST_bool_literal{true}
+			elif tok.type == lex.FALSE:
+				return AST_bool_literal{false}
 			elif tok.type == lex.LPAR:
-				let expr = add()
+				let expr = top_expr()
 				if expr == nil:
 					return nil
 				has_error = lexer.consume(lex.RPAR, "unmatched parantese") or has_error

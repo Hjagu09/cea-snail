@@ -1,10 +1,30 @@
 program -> expr
 
-expr : term ("+" expr)*
-     | term ("-" expr)*
+expr : (logic ("\n" logic)*)?
+
+logic : comp ("and" logic)*
+      | comp ("or" logic)*
+
+comp : math ("==" comp)*
+     | math ("!=" comp)*
+     | math ("<=" comp)*
+     | math (">=" comp)*
+     | math ("<" comp)*
+     | math (">" comp)*
+
+math : term ("+" math)*
+     | term ("-" math)*
 
 term : factor ("*" term)*
      | factor ("/" term)*
 
 factor : value POWER | value
-value : INT | FLOAT | IDENT | STRING | "(" expr ")" | "-" value
+value : INT 
+      | FLOAT 
+      | IDENT 
+      | STRING 
+      | "(" expr ")" 
+      | "-" value 
+      | "true" 
+      | "false" 
+      | "not" value

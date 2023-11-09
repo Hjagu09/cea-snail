@@ -13,6 +13,17 @@ enum token_types:
 	IDENT,
 	LF,
 	STRING_LITERAL,
+	EQUAL_EQUAL,
+	NOT_EQUAL,
+	LESS_EQUAL,
+	GREATER_EQUAL,
+	LESS,
+	GREATER,
+	AND,
+	OR,
+	NOT,
+	TRUE,
+	FALSE,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -33,6 +44,17 @@ def token_type_string(type: int) -> string:
 		case STRING_LITERAL: "STRING_LITERAL"
 		case EOF: "EOF"
 		case LF: "LF"
+		case EQUAL_EQUAL: "EQUAL_EQUAL"
+		case NOT_EQUAL: "NOT_EQUAL"
+		case LESS_EQUAL: "LESS_EQUAL"
+		case GREATER_EQUAL: "GREATER_EQUAL"
+		case LESS: "LESS"
+		case GREATER: "GREATER"
+		case AND: "AND"
+		case OR: "OR"
+		case NOT: "NOT"
+		case TRUE: "TRUE"
+		case FALSE: "FALSE"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -153,6 +175,34 @@ class lexer:
 			case pow_3:
 				offset++
 				int_token {POWER, pos + offset - 1, 1, 3 /* cube */}
+			case '=':
+				offset++
+				if prog.at(pos + offset) == '=':
+					offset++
+					token {EQUAL_EQUAL, pos + offset - 2, 2}
+				else:
+					nil
+			case '!':
+				offset++
+				if prog.at(pos + offset) == '=':
+					offset++
+					token {NOT_EQUAL, pos + offset - 2, 2}
+				else:
+					nil
+			case '<':
+				offset++
+				if prog.at(pos + offset) == '=':
+					offset++
+					token {LESS_EQUAL, pos + offset - 2, 2}
+				else:
+					token {LESS, pos + offset - 1, 1}
+			case '>':
+				offset++
+				if prog.at(pos + offset) == '=':
+					offset++
+					token {GREATER_EQUAL, pos + offset - 2, 2}
+				else:
+					token {GREATER, pos + offset - 1, 1}
 			case ' ', '\t':
 				offset++
 				return gen_next_token(move, offset)
@@ -172,12 +222,22 @@ class lexer:
 				name_utf8.push(prog.at(pos + offset))
 				offset++
 			let name = unicode_to_string(name_utf8)
-			tok = string_token {
-				IDENT,
-				pos + offset - name_utf8.length(),
-				name_utf8.length(),
-				name
-			}
+			let len = name_utf8.length()
+			let start = pos + offset - len
+			tok = switch name:
+				case "and":
+					token {AND, start, len}
+				case "or":
+					token {OR, start, len}
+				case "true":
+					token {TRUE, start, len}
+				case "false":
+					token {FALSE, start, len}
+				case "not":
+					token {NOT, start, len}
+				default:
+					string_token {IDENT, start, len, name}
+
 		elif is_num(prog.at(pos + offset)) and tok == nil:
 			var number_utf8 = []
 			var floating = false
