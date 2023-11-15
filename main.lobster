@@ -9,7 +9,22 @@ import types
 let prog = """
 not true == false and not false == (false or true)
 """
-let debug = get_line("debug (Y/*): ") == "Y"
+
+let cmd_raw = command_line_arguments()
+var cmd: string = ""
+let args = []
+if cmd_raw.length == 1:
+	cmd = cmd_raw[0]
+	for(cmd) arg:
+		if arg == '-':
+			args.push(true)
+		elif arg == '_':
+			args.push(false)
+		else:
+			print("invalid arg string")
+			return from program
+
+let debug = args[0]
 if debug:
 	print(prog)
 	print("----------")
