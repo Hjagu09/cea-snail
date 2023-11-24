@@ -10,26 +10,37 @@ class parser:
 	has_error: bool = false
 
 	def parse() -> AST_root?:
-		let expr = top_expr()
-		if expr != nil:
-			while true:
-				let next = lexer.next()
-				if next != nil and next.type == lex.EOF:
-					return AST_root{[AST_expr{expr}]}
+		var first = true
+		let exprs = []
+		while true:
+			let next = lexer.peek()
+			if next != nil and next.type == lex.EOF:
+				return AST_root{exprs}
 
-				elif next != nil and next.type != lex.LF:
-					let start = next.offset
-					while true:
-						let next_ = lexer.next()
-						if next_ != nil and (next_.type == lex.EOF):
-							let size = next_.offset + next_.length - start - 1
-							parse_error("unexpected traling character", start, size)
-							return nil
-		else:
-			return nil
+			if not first:
+				let err = not lexer.consume(lex.LF, "expected newline after expresion")
+				if err:
+					has_error = true
+					return nil
+				let next_2 = lexer.peek()
+				if next_2 != nil and next_2.type == lex.EOF:
+					return AST_root{exprs}
+			first = false
+			let expr = top_expr()
+			if expr == nil:
+				return nil
+			else:
+				exprs.push(expr)
 
 	def top_expr() -> AST_node?:
-		return logic()
+		let next = lexer.peek()
+		if next == nil:
+			return nil
+		
+		if next.type == lex.LET:
+			return asig()
+		else:
+			return logic()
 
 	def logic() -> AST_node?:
 		let left = comp()
@@ -127,52 +138,110 @@ class parser:
 		let val = value()
 		let next = lexer.peek()
 		if next != nil and next.type == lex.POWER and next is lex.int_token and val != nil:
-			has_error = lexer.consume(lex.POWER, "bad power") or has_error
+			has_error = not lexer.consume(lex.POWER, "bad power") or has_error
 			return AST_pow{val, AST_int_literal{next.value}}
 		else:
 			return val
 	
 	def value() -> AST_node?:
 		let tok = lexer.next()
+		var val: AST_node? = nil
 		if tok != nil: // FIXME anvönd switch
 			if tok.type == lex.INT_LITERAL and tok is lex.int_token:
-				return AST_int_literal {tok.value}
+				val = AST_int_literal {tok.value}
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
-				return AST_float_literal {tok.value}
+				val = AST_float_literal {tok.value}
 			elif tok.type == lex.IDENT and tok is lex.string_token:
-				return AST_var{tok.value}
+				val = AST_var{tok.value}
 			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
-				return AST_string_literal{tok.value}
+				val = AST_string_literal{tok.value}
 			elif tok.type == lex.MINUS:
 				let next = value()
 				if next != nil:
-					return AST_unary_sub{next}
-				else:
-					return nil
+					val = AST_unary_sub{next}
 			elif tok.type == lex.NOT:
 				let next = value()
 				if next != nil:
-					return AST_not{next}
-				else:
-					return nil
+					val = AST_not{next}
 			elif tok.type == lex.TRUE:
-				return AST_bool_literal{true}
+				val = AST_bool_literal{true}
 			elif tok.type == lex.FALSE:
-				return AST_bool_literal{false}
+				val = AST_bool_literal{false}
 			elif tok.type == lex.LPAR:
 				let expr = top_expr()
-				if expr == nil:
-					return nil
-				has_error = lexer.consume(lex.RPAR, "unmatched parantese") or has_error
 				if expr != nil:
-					return AST_group{expr}
-		error("bad value", tok)
-		return nil
+					has_error = not lexer.consume(lex.RPAR, "unmatched parantese") or has_error
+					
+					if expr != nil:
+						val = AST_group{expr}
+			else:
+				print(tok)
+				print(val)
+				error("bad value", tok)
+		let next = lexer.peek()
+		if next != nil and next.type == lex.LPAR:
+			lexer.next() // consume (
+			let args = args_list() // list of args
+			if args != nil and val != nil:
+				has_error = not lexer.consume(lex.RPAR, "unmatched parantese in function call") or has_error
+				return AST_call{val, args}
+			else:
+				return nil
+		else:
+			return val
+
+	def args_list() -> [AST_node]?:
+		var next = lexer.peek()
+		if next != nil and next.type != lex.RPAR:
+			let args = []
+			var arg = top_expr()
+			if arg == nil:
+				return nil
+			args.push(arg)
+			next = lexer.peek()
+			while next != nil and next.type != lex.RPAR:
+				let err = not lexer.consume(lex.COMMA, "expected comma at")
+				if err:
+					has_error = true
+					return nil
+				arg = top_expr()
+				if arg == nil:
+					return nil
+				args.push(arg)
+				next = lexer.peek()
+			return args
+		else:
+			return []
+
+	def asig() -> AST_node?:
+		var err = not lexer.consume(lex.LET, "expected let in variable declaration")
+		if err:
+			has_error = true
+			return nil
+		let not_ident_err, ident = lexer.consume(lex.IDENT, "expected identifier")
+		if not not_ident_err or ident == nil:
+			has_error = true
+			return nil
+		if not ident is lex.string_token:
+			error("expected string token", ident)
+			return nil
+		err = not lexer.consume(lex.EQUAL, "expected asignment after variable declaration")
+		if err:
+			has_error = true
+			return nil
+		let expr = top_expr()
+		if expr == nil:
+			return nil
+		return AST_decl{ident.value, expr}
+
 
 	def error(e, token):
 		has_error = true
 		if token != nil:
-			lexer.error(e, token.offset, token.length, true)
+			if token.type != lex.LF:
+				lexer.error(e, token.offset, token.length, true)
+			else:
+				lexer.error(e + " (newline)", token.offset, token.length + 1, true)
 		else:
 			print("\nERROR: {e}")
 	def parse_error(e, offset, size):

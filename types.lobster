@@ -3,6 +3,7 @@ enum types:
 	INT
 	FLOAT
 	BOOL
+	FUNC
 	UNSET = -1
 	NIL = -2
 

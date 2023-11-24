@@ -24,6 +24,9 @@ enum token_types:
 	NOT,
 	TRUE,
 	FALSE,
+	COMMA,
+	EQUAL,
+	LET,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -55,6 +58,9 @@ def token_type_string(type: int) -> string:
 		case NOT: "NOT"
 		case TRUE: "TRUE"
 		case FALSE: "FALSE"
+		case COMMA: "COMMA"
+		case LET: "LET"
+		case EQUAL: "EQUAL"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -163,6 +169,9 @@ class lexer:
 			case '/':
 				offset++
 				token {SLASH, pos + offset - 1, 1}
+			case ',':
+				offset++
+				token {COMMA, pos + offset - 1, 1}
 			case '(':
 				offset++
 				token {LPAR, pos + offset - 1, 1}
@@ -181,7 +190,7 @@ class lexer:
 					offset++
 					token {EQUAL_EQUAL, pos + offset - 2, 2}
 				else:
-					nil
+					token {EQUAL, pos + offset - 1, 1}
 			case '!':
 				offset++
 				if prog.at(pos + offset) == '=':
@@ -207,7 +216,7 @@ class lexer:
 				offset++
 				return gen_next_token(move, offset)
 			case '\n':
-				let start = offset
+				let start = offset + pos
 				while (prog.at(pos + offset) == '\n' or 
 					prog.at(pos + offset) == ' ' or
 					prog.at(pos + offset) == '\t'):
@@ -235,6 +244,8 @@ class lexer:
 					token {FALSE, start, len}
 				case "not":
 					token {NOT, start, len}
+				case "let":
+					token {LET, start, len}
 				default:
 					string_token {IDENT, start, len, name}
 
@@ -297,20 +308,22 @@ class lexer:
 		print("\nERROR: {e} at {string(line_n)}:{string(col)} to {string(end_line_n)}:{string(end_col)}")
 		
 		if end_line_n == line_n:
-			let line = lines[line_n - 1]
-			let error_line = "    {string(line_n)}| {line}"
-			print(error_line)
-			let start_buffer = " ".repeat_string(6 + string(line_n).length())
-			let at_buffer = " ".repeat_string(col - 1)
-			let arrow_line = "-".repeat_string(size - 1)
-			var arrow = "{start_buffer}{at_buffer}^{arrow_line}"
-			print("{arrow} here")
+			if line_n - 1 < lines.length():
+				let line = lines[line_n - 1]
+				let error_line = "    {string(line_n)}| {line}"
+				print(error_line)
+				let start_buffer = " ".repeat_string(6 + string(line_n).length())
+				let at_buffer = " ".repeat_string(col - 1)
+				let arrow_line = "-".repeat_string(size - 1)
+				var arrow = "{start_buffer}{at_buffer}^{arrow_line}"
+				print("{arrow} here")
 		else:
 			for(end_line_n - line_n + 1) l:
 				let ln = l + line_n
-				let line = lines[ln - 1]
-				let error_line = "    {string(ln)}| {line}"
-				print(error_line)
+				if ln - 1 < lines.length():
+					let line = lines[ln - 1]
+					let error_line = "    {string(ln)}| {line}"
+					print(error_line)
 
 		if not parser:
 			has_error = true
@@ -328,15 +341,18 @@ class lexer:
 		return gen_next_token(false)
 
 	// kalla altid på funktionen så här:
-	// error = consume(...) or error
+	// error = not consume(...) or error
 	// inte:
-	// error = error or consume(...)
+	// error = error or not consume(...)
 	def consume(type: int, error: string) -> bool, token?:
 		let tok = next()
 		if tok != nil and tok.type == type:
 			return true, tok
 		elif tok != nil:
-			this.error(error, tok.offset, tok.length, true)
+			if tok.type != LF:
+				this.error(error, tok.offset, tok.length, true)
+			else:
+				this.error(error + " (newline)", tok.offset, tok.length + 1, true)
 		else:
 			print("\nERROR: {error}")
 		return false, tok

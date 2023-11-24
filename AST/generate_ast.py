@@ -4,7 +4,8 @@ with open("AST.json") as file:
 	data = json.load(file)
 	nodes = [
 		f"abstract class {data['name_pre'] + data['base']}:",
-		"	def str(ind: int = 0) -> string: return \"  \".repeat_string(ind) + \"node\""
+		"	def str(ind: int = 0) -> string: return \"  \".repeat_string(ind) + \"node\"",
+		"\tdef all_childs()"
 	]
 	for node in data["nodes"]:
 		nodes.append(
@@ -32,6 +33,11 @@ with open("AST.json") as file:
 			)
 			first = False
 		to_str.append("		out += \"\\n\"")
+		all_childs = [
+			"\tdef all_childs():",
+			"\t\tlet __childs = []"
+		]
+		all_childs_first = True
 		for child in node["childs"]:
 			type = "node"
 			if len(child) > 1:
@@ -43,13 +49,21 @@ with open("AST.json") as file:
 				to_str.append(
 					f"		out += {child[0]}.str(ind + 1) + \"\""
 				)
+				all_childs.append(
+					f"\t\t__childs.push({child[0]})"
+				)
 			else:
 				nodes.append(
 					f"	{child[0]}: [{data['name_pre'] + type[1:]}]"
+				)
+				all_childs.append(
+					f"\t\tfor({child[0]}) __c:\n\t\t\t__childs.push(__c)"
 				)
 				to_str.append(
 					f"		for({child[0]}) __c:\n			out += __c.str(ind + 1) + \"\""
 				)
 		to_str.append("		return out")
+		all_childs.append("\t\treturn __childs")
 		nodes.append("\n".join(to_str))
+		nodes.append("\n".join(all_childs))
 	print("\n".join(nodes))

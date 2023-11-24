@@ -1,9 +1,11 @@
 import pass
 import from ".."
 import types
+import ident_pass
 
 class type_pass : ast_pass
-	good = true 
+	current_scope: scope
+	good = true
 	def analyse(node: AST_node, error) -> bool:
 		visit(node) e, at:
 			good = false
@@ -39,6 +41,8 @@ class type_pass : ast_pass
 			case AST_greater: visit_logic(node, error)
 			case AST_less: visit_logic(node, error)
 			case AST_not: visit_unary(node, error)
+			case AST_decl: visit_declr(node, error)
+			case AST_var: visit_var(node, error)
 			default:
 				print("type_pass: unknown ast type {node}")
 				return  UNSET
@@ -165,3 +169,20 @@ class type_pass : ast_pass
 			error("internal type error (NOLOGIC)", node)
 		
 		return BOOL
+
+	def visit_declr(node: AST_decl, error) -> int:
+		let type = visit(node.body, error)
+		node.type = type
+		current_scope.set(node.name, type)
+		return type
+
+	def visit_var(node: AST_var, error) -> int:
+		let type = current_scope.get(node.name)
+		if type == UNSET:
+			error("unknown identifier", node)
+			return UNSET
+		return type
+
+constructor type_pass():
+	let new_pass = type_pass{scope{}}
+	return new_pass

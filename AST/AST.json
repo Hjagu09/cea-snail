@@ -22,7 +22,9 @@
 		{ "name": "less", "childs": [["left"], ["right"]], "const": []},
 		{ "name": "greater", "childs": [["left"], ["right"]], "const": []},
 		{ "name": "bool_literal", "childs": [], "const": [["value", "bool"]]},
-		{ "name": "not", "childs": [["body"]], "const": []}
+		{ "name": "not", "childs": [["body"]], "const": []},
+		{ "name": "call", "childs": [["func"], ["args", "*node"]], "const": [["type", "int", "-1"]]},
+		{ "name": "decl", "childs": [["body"]], "const": [["name", "string"], ["type", "int", "-1"]]}
 	],
 	"base": "node",
 	"name_pre": "AST_"

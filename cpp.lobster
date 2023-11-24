@@ -41,6 +41,17 @@ class cpp_code_builder:
 	def get_var_name() -> string:
 		return "__{number_to_string(var_name++, 16, 4)}__"
 
+def type_to_cpp(type: int) -> string:
+	return switch type:
+		case INT: "int"
+		case STRING: "string"
+		case FLOAT: "double"
+		case BOOL: "bool"
+		case UNSET: "/* ERROR unset type */"
+		case NIL: "voidi*"
+		case FUNC: "/* ERROR TODO func type to cpp"
+		default: "/* ERROR unknown type (cpp.lobster 53) */"
+
 class to_cpp : codegen
 	builder = cpp_code_builder{true}
 	def generate() -> to_cpp:
@@ -76,15 +87,16 @@ class to_cpp : codegen
 	def visit_root(node: AST_node) -> void:
 		if node is AST_root:
 			for(node.body) child:
-				visit_expr(child)
+				builder.code_line("std::cout << {eval(child)} << std::endl;")
 		else:
 			error(node)
 
-	def visit_expr(node: AST_node) -> void:
+	def visit_expr(node: AST_node) -> string:
 		if node is AST_expr:
-			builder.code_line("std::cout << " + eval(node.body) + " << std::endl;")
+			return eval(node.body)
 		else:
 			error(node)
+			return "/*ERROR*/"
 
 	def eval(node: AST_node) -> string:
 		return switch node:
@@ -95,7 +107,6 @@ class to_cpp : codegen
 			case AST_pow: visit_pow(node)
 			case AST_int_literal: visit_int(node)
 			case AST_float_literal: visit_float(node)
-			case AST_var: visit_var(node)
 			case AST_group: visit_group(node)
 			case AST_string_literal: visit_string(node)
 			case AST_unary_sub: visit_un_sub(node)
@@ -108,6 +119,9 @@ class to_cpp : codegen
 			case AST_and: visit_and(node)
 			case AST_or: visit_or(node)
 			case AST_not: visit_not(node)
+			case AST_decl: visit_var_decl(node)
+			case AST_var: visit_var_cgen(node)
+			case AST_expr: visit_expr(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -173,3 +187,10 @@ class to_cpp : codegen
 
 	def visit_not(node: AST_not) -> string:
 		return "!({eval(node.body)})"
+
+	def visit_var_cgen(node: AST_var) -> string:
+		return "___identifier___{node.name}___"
+	def visit_var_decl(node: AST_decl) -> string:
+		print("visit_var_decl")
+		builder.code_line("{type_to_cpp(node.type)} ___identifier___{node.name}___ = {eval(node.body)};")
+		return "___identifier___{node.name}___"

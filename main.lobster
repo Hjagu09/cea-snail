@@ -7,7 +7,9 @@ import pass_man
 import types
 
 let prog = """
-not true == false and not false == (false or true)
+let a = 1
+let b = 2
+a + b
 """
 
 let cmd_raw = command_line_arguments()
@@ -56,7 +58,7 @@ if root == nil:
 	return from program
 
 let analyser = pass_man{[
-	type_pass{}
+	type_pass(),
 ]}
 let analyser_result = analyser.run_passes(root, debug)
 if not all(analyser_result):

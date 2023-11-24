@@ -1,6 +1,7 @@
-program -> expr
+program -> (expr ("\n" expr)*)?
 
-expr : (logic ("\n" logic)*)?
+expr : logic
+     | asig
 
 logic : comp ("and" logic)*
       | comp ("or" logic)*
@@ -28,3 +29,8 @@ value : INT
       | "true" 
       | "false" 
       | "not" value
+      | value "(" args? ")"
+args : expr ("," expr)*
+
+
+asig : "let" IDENT "=" expr

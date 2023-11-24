@@ -7,6 +7,9 @@ class AST_string_literal : AST_node
 		out += " value " + string(value)
 		out += "\n"
 		return out
+	def all_childs():
+		let __childs = []
+		return __childs
 class AST_int_literal : AST_node
 	value: int
 	def str(ind: int = 0) -> string:
@@ -14,6 +17,9 @@ class AST_int_literal : AST_node
 		out += " value " + string(value)
 		out += "\n"
 		return out
+	def all_childs():
+		let __childs = []
+		return __childs
 class AST_float_literal : AST_node
 	value: float
 	def str(ind: int = 0) -> string:
@@ -21,6 +27,9 @@ class AST_float_literal : AST_node
 		out += " value " + string(value)
 		out += "\n"
 		return out
+	def all_childs():
+		let __childs = []
+		return __childs
 class AST_add : AST_node
 	type: int = -1
 	left: AST_node
@@ -32,6 +41,11 @@ class AST_add : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_sub : AST_node
 	type: int = -1
 	left: AST_node
@@ -43,6 +57,11 @@ class AST_sub : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_mult : AST_node
 	type_left: int = -1
 	type_right: int = -1
@@ -56,6 +75,11 @@ class AST_mult : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_div : AST_node
 	type: int = -1
 	left: AST_node
@@ -67,6 +91,11 @@ class AST_div : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_pow : AST_node
 	type: int = -1
 	base: AST_node
@@ -78,6 +107,11 @@ class AST_pow : AST_node
 		out += base.str(ind + 1) + ""
 		out += exp.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(base)
+		__childs.push(exp)
+		return __childs
 class AST_unary_sub : AST_node
 	type: int = -1
 	body: AST_node
@@ -87,6 +121,10 @@ class AST_unary_sub : AST_node
 		out += "\n"
 		out += body.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(body)
+		return __childs
 class AST_group : AST_node
 	type: int = -1
 	body: AST_node
@@ -96,6 +134,10 @@ class AST_group : AST_node
 		out += "\n"
 		out += body.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(body)
+		return __childs
 class AST_root : AST_node
 	body: [AST_node]
 	def str(ind: int = 0) -> string:
@@ -104,6 +146,11 @@ class AST_root : AST_node
 		for(body) __c:
 			out += __c.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		for(body) __c:
+			__childs.push(__c)
+		return __childs
 class AST_var : AST_node
 	name: string
 	def str(ind: int = 0) -> string:
@@ -111,6 +158,9 @@ class AST_var : AST_node
 		out += " name " + string(name)
 		out += "\n"
 		return out
+	def all_childs():
+		let __childs = []
+		return __childs
 class AST_expr : AST_node
 	type: int = -1
 	body: AST_node
@@ -120,6 +170,10 @@ class AST_expr : AST_node
 		out += "\n"
 		out += body.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(body)
+		return __childs
 class AST_and : AST_node
 	left: AST_node
 	right: AST_node
@@ -129,6 +183,11 @@ class AST_and : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_or : AST_node
 	left: AST_node
 	right: AST_node
@@ -138,6 +197,11 @@ class AST_or : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_equal : AST_node
 	left: AST_node
 	right: AST_node
@@ -147,6 +211,11 @@ class AST_equal : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_not_equal : AST_node
 	left: AST_node
 	right: AST_node
@@ -156,6 +225,11 @@ class AST_not_equal : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_less_equal : AST_node
 	left: AST_node
 	right: AST_node
@@ -165,6 +239,11 @@ class AST_less_equal : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_greater_equal : AST_node
 	left: AST_node
 	right: AST_node
@@ -174,6 +253,11 @@ class AST_greater_equal : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_less : AST_node
 	left: AST_node
 	right: AST_node
@@ -183,6 +267,11 @@ class AST_less : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_greater : AST_node
 	left: AST_node
 	right: AST_node
@@ -192,6 +281,11 @@ class AST_greater : AST_node
 		out += left.str(ind + 1) + ""
 		out += right.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(left)
+		__childs.push(right)
+		return __childs
 class AST_bool_literal : AST_node
 	value: bool
 	def str(ind: int = 0) -> string:
@@ -199,6 +293,9 @@ class AST_bool_literal : AST_node
 		out += " value " + string(value)
 		out += "\n"
 		return out
+	def all_childs():
+		let __childs = []
+		return __childs
 class AST_not : AST_node
 	body: AST_node
 	def str(ind: int = 0) -> string:
@@ -206,3 +303,40 @@ class AST_not : AST_node
 		out += "\n"
 		out += body.str(ind + 1) + ""
 		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(body)
+		return __childs
+class AST_call : AST_node
+	type: int = -1
+	func: AST_node
+	args: [AST_node]
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "call:"
+		out += " type " + string(type)
+		out += "\n"
+		out += func.str(ind + 1) + ""
+		for(args) __c:
+			out += __c.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(func)
+		for(args) __c:
+			__childs.push(__c)
+		return __childs
+class AST_decl : AST_node
+	name: string
+	type: int = -1
+	body: AST_node
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "decl:"
+		out += " name " + string(name)
+		out += ", type " + string(type)
+		out += "\n"
+		out += body.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		__childs.push(body)
+		return __childs
