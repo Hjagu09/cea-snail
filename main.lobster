@@ -7,9 +7,9 @@ import pass_man
 import types
 
 let prog = """
-let a = 1
-let b = 2
-a + b
+let a = 1 + 1
+let b = '+'
+print(a * b)
 """
 
 let cmd_raw = command_line_arguments()

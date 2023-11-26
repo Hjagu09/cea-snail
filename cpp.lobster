@@ -41,10 +41,10 @@ class cpp_code_builder:
 	def get_var_name() -> string:
 		return "__{number_to_string(var_name++, 16, 4)}__"
 
-def type_to_cpp(type: int) -> string:
-	return switch type:
+def type_to_cpp(type: type_struct) -> string:
+	return switch type.type:
 		case INT: "int"
-		case STRING: "string"
+		case STRING: "std::string"
 		case FLOAT: "double"
 		case BOOL: "bool"
 		case UNSET: "/* ERROR unset type */"
@@ -77,6 +77,12 @@ class to_cpp : codegen
 				return ret;
 			""".replace_string("\t", "")
 		)
+		builder.func(
+			"void print(std::string str)",
+			"""
+				std::cout << str << std::endl;
+			""".replace_string("\t", "")
+		)
 		visit_root(ast)
 		return this
 	def get_code() -> string:
@@ -87,7 +93,7 @@ class to_cpp : codegen
 	def visit_root(node: AST_node) -> void:
 		if node is AST_root:
 			for(node.body) child:
-				builder.code_line("std::cout << {eval(child)} << std::endl;")
+				builder.code_line("{eval(child)};")
 		else:
 			error(node)
 
@@ -122,6 +128,7 @@ class to_cpp : codegen
 			case AST_decl: visit_var_decl(node)
 			case AST_var: visit_var_cgen(node)
 			case AST_expr: visit_expr(node)
+			case AST_call: visit_call(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -194,3 +201,19 @@ class to_cpp : codegen
 		print("visit_var_decl")
 		builder.code_line("{type_to_cpp(node.type)} ___identifier___{node.name}___ = {eval(node.body)};")
 		return "___identifier___{node.name}___"
+
+	def visit_call(node: AST_call) -> string:
+		assert node.func is AST_var
+		var args = ""
+		for(node.args) arg, i:
+			if i == 0:
+				args += "{eval(arg)}"
+			else:
+				args += ", {eval(arg)}"
+		if node.type.type >= 0: // inte NIL eller UNSET
+			let name = builder.get_var_name()
+			builder.code_line("auto {name} = {node.func.name}({args});")
+			return name
+		else:
+			builder.code_line("{node.func.name}({args});")
+			return "NULL"

@@ -1,5 +1,8 @@
+import from ".."
+import types
 abstract class AST_node:
 	def str(ind: int = 0) -> string: return "  ".repeat_string(ind) + "node"
+	def all_childs() -> [AST_node]: return []
 class AST_string_literal : AST_node
 	value: string
 	def str(ind: int = 0) -> string:
@@ -31,7 +34,7 @@ class AST_float_literal : AST_node
 		let __childs = []
 		return __childs
 class AST_add : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	left: AST_node
 	right: AST_node
 	def str(ind: int = 0) -> string:
@@ -47,7 +50,7 @@ class AST_add : AST_node
 		__childs.push(right)
 		return __childs
 class AST_sub : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	left: AST_node
 	right: AST_node
 	def str(ind: int = 0) -> string:
@@ -63,8 +66,8 @@ class AST_sub : AST_node
 		__childs.push(right)
 		return __childs
 class AST_mult : AST_node
-	type_left: int = -1
-	type_right: int = -1
+	type_left: type_struct = type_struct(UNSET)
+	type_right: type_struct = type_struct(UNSET)
 	left: AST_node
 	right: AST_node
 	def str(ind: int = 0) -> string:
@@ -81,7 +84,7 @@ class AST_mult : AST_node
 		__childs.push(right)
 		return __childs
 class AST_div : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	left: AST_node
 	right: AST_node
 	def str(ind: int = 0) -> string:
@@ -97,7 +100,7 @@ class AST_div : AST_node
 		__childs.push(right)
 		return __childs
 class AST_pow : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	base: AST_node
 	exp: AST_node
 	def str(ind: int = 0) -> string:
@@ -113,7 +116,7 @@ class AST_pow : AST_node
 		__childs.push(exp)
 		return __childs
 class AST_unary_sub : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	body: AST_node
 	def str(ind: int = 0) -> string:
 		var out = "  ".repeat_string(ind) + "unary_sub:"
@@ -126,7 +129,7 @@ class AST_unary_sub : AST_node
 		__childs.push(body)
 		return __childs
 class AST_group : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	body: AST_node
 	def str(ind: int = 0) -> string:
 		var out = "  ".repeat_string(ind) + "group:"
@@ -162,7 +165,7 @@ class AST_var : AST_node
 		let __childs = []
 		return __childs
 class AST_expr : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	body: AST_node
 	def str(ind: int = 0) -> string:
 		var out = "  ".repeat_string(ind) + "expr:"
@@ -308,7 +311,7 @@ class AST_not : AST_node
 		__childs.push(body)
 		return __childs
 class AST_call : AST_node
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	func: AST_node
 	args: [AST_node]
 	def str(ind: int = 0) -> string:
@@ -327,7 +330,7 @@ class AST_call : AST_node
 		return __childs
 class AST_decl : AST_node
 	name: string
-	type: int = -1
+	type: type_struct = type_struct(UNSET)
 	body: AST_node
 	def str(ind: int = 0) -> string:
 		var out = "  ".repeat_string(ind) + "decl:"

@@ -3,9 +3,11 @@ import json
 with open("AST.json") as file:
 	data = json.load(file)
 	nodes = [
+		"import from \"..\"",
+		"import types",
 		f"abstract class {data['name_pre'] + data['base']}:",
 		"	def str(ind: int = 0) -> string: return \"  \".repeat_string(ind) + \"node\"",
-		"\tdef all_childs()"
+		"\tdef all_childs() -> [AST_node]: return []"
 	]
 	for node in data["nodes"]:
 		nodes.append(

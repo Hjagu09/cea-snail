@@ -146,7 +146,7 @@ class parser:
 	def value() -> AST_node?:
 		let tok = lexer.next()
 		var val: AST_node? = nil
-		if tok != nil: // FIXME anvönd switch
+		if tok != nil: // FIXME anvönd switch FIXME error: `constructor` (1st argumentet) requiers type `type_struct`
 			if tok.type == lex.INT_LITERAL and tok is lex.int_token:
 				val = AST_int_literal {tok.value}
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
@@ -179,7 +179,7 @@ class parser:
 				print(val)
 				error("bad value", tok)
 		let next = lexer.peek()
-		if next != nil and next.type == lex.LPAR:
+		if next != nil and next.type == lex.LPAR: // Function call
 			lexer.next() // consume (
 			let args = args_list() // list of args
 			if args != nil and val != nil:
