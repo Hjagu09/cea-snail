@@ -216,8 +216,9 @@ class type_pass : ast_pass
 		for(node.body) child:
 			let _ = visit(child, error)
 			pass()
-		current_scope.pop_scope()
+		current_scope = current_scope.pop_scope()
 		current_scope.set(node.name, node.type)
+		current_scope.print_scope()
 		return type_struct(UNSET)
 
 

@@ -23,5 +23,7 @@ class scope:
 	def push_scope() -> scope:
 		return scope{this}
 	def pop_scope() -> scope:
+		guard parent:
+			return this
 		return parent
 

@@ -7,7 +7,7 @@ import pass_man
 import types
 
 let prog = """
-def repeat(x: int, n: str) -> nil {
+def repeat(n: int, x: str) -> nil {
 	print(x * n)
 }
 
