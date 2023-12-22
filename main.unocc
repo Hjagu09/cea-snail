@@ -1,0 +1,7 @@
+def repeat(n: int, x: str) -> nil {
+	print(x * n)
+}
+
+let a = 5²
+let b = '\\(*u*)/ '
+repeat(a, b)

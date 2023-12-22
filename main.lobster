@@ -6,15 +6,9 @@ import type_pass
 import pass_man
 import types
 
-let prog = """
-def repeat(n: int, x: str) -> nil {
-	print(x * n)
-}
-
-let a = 5²
-let b = '\\(*u*)/ '
-repeat(a, b)
-"""
+let prog = read_file("main.unocc")
+guard prog:
+	print("create main.unocc")
 
 let cmd_raw = command_line_arguments()
 var cmd: string = ""
