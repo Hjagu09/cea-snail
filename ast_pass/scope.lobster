@@ -3,9 +3,9 @@ import dictionary
 import from ".."
 import types
 
-class scope:
+class scope_layer:
 	dict = dictionary<string, type_struct>(10) // vet inte vad argumentet gör
-	parent: scope?
+	parent: scope_layer?
 	def set(key: string, type: type_struct):
 		dict.set(key, type)
 	def get(key: string) -> type_struct:
@@ -20,10 +20,20 @@ class scope:
 		print("\nSCOPE:")
 		print(dict)
 		print("--------------------\n")
-	def push_scope() -> scope:
-		return scope{this}
-	def pop_scope() -> scope:
-		guard parent:
-			return this
-		return parent
 
+class scope:
+	current_scope: scope_layer = scope_layer{nil}
+	def print_scope() -> void:
+		current_scope.print_scope()
+	def push_scope() -> scope:
+		current_scope = scope_layer{current_scope}
+		return this
+	def pop_scope():
+		if current_scope.parent:
+			current_scope = current_scope.parent
+		return this
+
+	def set(key: string, type: type_struct):
+		current_scope.set(key, type)
+	def get(key: string) -> type_struct:
+		return current_scope.get(key)

@@ -209,21 +209,21 @@ class type_pass : ast_pass
 			return type.func.return_type
 
 	def visit_func(node: AST_func_decl, error) -> type_struct:
-		current_scope = current_scope.push_scope()
+		current_scope.push_scope()
 		for(node.arg_names.length()) i:
 			assert node.type.func
 			current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
 		for(node.body) child:
 			let _ = visit(child, error)
 			pass()
-		current_scope = current_scope.pop_scope()
+		current_scope.pop_scope()
 		current_scope.set(node.name, node.type)
 		current_scope.print_scope()
 		return type_struct(UNSET)
 
 
 constructor type_pass():
-	let new_pass = type_pass{scope{nil}}
+	let new_pass = type_pass{scope{}}
 	new_pass.current_scope.set(
 		"print",
 		type_struct(
