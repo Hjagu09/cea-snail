@@ -7,9 +7,13 @@ import pass_man
 import types
 
 let prog = """
-let a = 1 + 1
-let b = '+'
-print(a * b)
+def repeat(x: int, n: str) -> nil {
+	print(x * n)
+}
+
+let a = 5²
+let b = '\\(*u*)/ '
+repeat(a, b)
 """
 
 let cmd_raw = command_line_arguments()

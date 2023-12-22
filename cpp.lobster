@@ -9,13 +9,28 @@ class cpp_code_builder:
 	decs = []
 	code = []
 	var_name: int = 0
-	def func(signature, body: cpp_code_builder):
+	def builder_func(signature, body: cpp_code_builder):
+		assert main
 		func(signature, body.get_code())
 	def func(signature, body: string):
+		assert main
 		prots.push(signature + ";")
 		decs.push(signature + "\{\n")
 		decs.push(body)
 		decs.push("\}\n")
+	def func(name: string, return_type: type_struct, arg_type: [type_struct], arg_names: [string], body_builder):
+		assert main
+		var signature = ""
+		signature += return_type.type_to_cpp() + " "
+		signature += cpp_ident(name) + "("
+		for(arg_names.length()) i:
+			if i != 0:
+				signature += ", "
+			signature += arg_type[i].type_to_cpp() + " " + cpp_ident(arg_names[i])
+		signature += ")"
+		let body = cpp_code_builder{false}
+		body_builder(body)
+		builder_func(signature, body)
 
 	def cvar(name, type):
 		prots.push("{type} {name}")
@@ -34,12 +49,14 @@ class cpp_code_builder:
 			]
 			output.push(concat_string(main_func, "\n"))
 		else:
-			output.push(concat_string(code, "\n"))
+			output.push(concat_string(code, "\n")) // FIXME kommer inte funka
 		return concat_string(output, "\n\n")
 	def include(line):
 		prots.push(line)
 	def get_var_name() -> string:
 		return "__{number_to_string(var_name++, 16, 4)}__"
+	def cpp_ident(name: string) -> string:
+		return "___identifier___{name}___"
 
 def type_to_cpp(type: type_struct) -> string:
 	return switch type.type:
@@ -48,7 +65,7 @@ def type_to_cpp(type: type_struct) -> string:
 		case FLOAT: "double"
 		case BOOL: "bool"
 		case UNSET: "/* ERROR unset type */"
-		case NIL: "voidi*"
+		case NIL: "void" // kanske måste va void*
 		case FUNC: "/* ERROR TODO func type to cpp"
 		default: "/* ERROR unknown type (cpp.lobster 53) */"
 
@@ -59,6 +76,7 @@ class to_cpp : codegen
 		builder.include("#include <cstddef>")
 		builder.include("#include <iostream>")
 		builder.include("#include <string>")
+		builder.include("#define EXPOSE(NAME) ___identifier___##NAME##___")
 		// här måste vi va färdiga med "#include ..."s om vi ska generera snygg kod
 
 		builder.func(
@@ -78,7 +96,7 @@ class to_cpp : codegen
 			""".replace_string("\t", "")
 		)
 		builder.func(
-			"void print(std::string str)",
+			"void EXPOSE(print)(std::string str)",
 			"""
 				std::cout << str << std::endl;
 			""".replace_string("\t", "")
@@ -104,8 +122,11 @@ class to_cpp : codegen
 			error(node)
 			return "/*ERROR*/"
 
-	def eval(node: AST_node) -> string:
-		return switch node:
+	def eval(node: AST_node, new_builder: cpp_code_builder? = nil) -> string:
+		let old_builder = builder
+		if new_builder:
+			builder = new_builder
+		let ret_code = switch node:
 			case AST_add: visit_add(node)
 			case AST_sub: visit_sub(node)
 			case AST_div: visit_div(node)
@@ -129,6 +150,7 @@ class to_cpp : codegen
 			case AST_var: visit_var_cgen(node)
 			case AST_expr: visit_expr(node)
 			case AST_call: visit_call(node)
+			case AST_func_decl: visit_func_decl(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -137,6 +159,9 @@ class to_cpp : codegen
 			default:
 				error(node)
 				"/* ERROR */"
+		if new_builder :
+			builder = old_builder
+		return ret_code
 
 	// lägg till tmp för att fixa ordning
 	def visit_group(node: AST_group) -> string:
@@ -212,8 +237,20 @@ class to_cpp : codegen
 				args += ", {eval(arg)}"
 		if node.type.type >= 0: // inte NIL eller UNSET
 			let name = builder.get_var_name()
-			builder.code_line("auto {name} = {node.func.name}({args});")
+			builder.code_line("auto {name} = {builder.cpp_ident(node.func.name)}({args});")
 			return name
 		else:
-			builder.code_line("{node.func.name}({args});")
+			builder.code_line("{builder.cpp_ident(node.func.name)}({args});")
 			return "NULL"
+
+	def visit_func_decl(node: AST_func_decl) -> string:
+		assert node.type.func
+		builder.func(
+			node.name,
+			node.type.func.return_type,
+			node.type.func.argumentents,
+			node.arg_names
+		) func_builder:
+			for(node.body) child:
+				func_builder.code_line("{eval(child, func_builder)};")
+		return node.name

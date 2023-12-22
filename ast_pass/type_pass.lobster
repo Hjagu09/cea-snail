@@ -1,7 +1,7 @@
 import pass
 import from ".."
 import types
-import ident_pass
+import scope
 
 class type_pass : ast_pass
 	current_scope: scope
@@ -45,6 +45,7 @@ class type_pass : ast_pass
 			case AST_decl: visit_declr(node, error)
 			case AST_var: visit_var(node, error)
 			case AST_call: visit_call(node, error)
+			case AST_func_decl: visit_func(node, error)
 			default:
 				print("type_pass: unknown ast type {node}")
 				return type_struct(UNSET)
@@ -207,9 +208,21 @@ class type_pass : ast_pass
 			node.type = type.func.return_type
 			return type.func.return_type
 
+	def visit_func(node: AST_func_decl, error) -> type_struct:
+		current_scope = current_scope.push_scope()
+		for(node.arg_names.length()) i:
+			assert node.type.func
+			current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
+		for(node.body) child:
+			let _ = visit(child, error)
+			pass()
+		current_scope.pop_scope()
+		current_scope.set(node.name, node.type)
+		return type_struct(UNSET)
+
 
 constructor type_pass():
-	let new_pass = type_pass{scope{}}
+	let new_pass = type_pass{scope{nil}}
 	new_pass.current_scope.set(
 		"print",
 		type_struct(

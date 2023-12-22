@@ -27,6 +27,11 @@ enum token_types:
 	COMMA,
 	EQUAL,
 	LET,
+	DEF,
+	LCURLPAR,
+	RCURLPAR,
+	COLLON,
+	AROW
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -61,6 +66,11 @@ def token_type_string(type: int) -> string:
 		case COMMA: "COMMA"
 		case LET: "LET"
 		case EQUAL: "EQUAL"
+		case DEF: "DEF"
+		case LCURLPAR: "LCURLPAR"
+		case RCURLPAR: "RCURLPAR"
+		case COLLON: "COLLON"
+		case AROW: "AROW"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -159,7 +169,11 @@ class lexer:
 				}
 			case '-':
 				offset++
-				token {MINUS, pos + offset - 1, 1}
+				if prog.at(pos + offset) == '>':
+					offset++
+					token {AROW, pos + offset - 2 , 2}
+				else:
+					token {MINUS, pos + offset - 1, 1}
 			case '+':
 				offset++
 				token {PLUS, pos + offset - 1, 1}
@@ -212,6 +226,15 @@ class lexer:
 					token {GREATER_EQUAL, pos + offset - 2, 2}
 				else:
 					token {GREATER, pos + offset - 1, 1}
+			case '{':
+				offset++
+				token {LCURLPAR, pos + offset - 1, 1}
+			case '}':
+				offset++
+				token {RCURLPAR, pos + offset - 1, 1}
+			case ':':
+				offset++
+				token {COLLON, pos + offset - 1, 1}
 			case ' ', '\t':
 				offset++
 				return gen_next_token(move, offset)
@@ -246,6 +269,8 @@ class lexer:
 					token {NOT, start, len}
 				case "let":
 					token {LET, start, len}
+				case "def":
+					token{DEF, start, len}
 				default:
 					string_token {IDENT, start, len, name}
 
@@ -359,3 +384,12 @@ class lexer:
 	def reset():
 		prog = nil
 		pos = 0
+
+	def optional(type: int) -> bool:
+		let tok = peek()
+		if tok != nil and tok.type == type:
+			next()
+			return false
+		else:
+			return true
+			

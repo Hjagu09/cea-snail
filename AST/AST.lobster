@@ -343,3 +343,22 @@ class AST_decl : AST_node
 		let __childs = []
 		__childs.push(body)
 		return __childs
+class AST_func_decl : AST_node
+	name: string
+	type: type_struct
+	arg_names: [string]
+	body: [AST_node]
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "func_decl:"
+		out += " name " + string(name)
+		out += ", type " + string(type)
+		out += ", arg_names " + string(arg_names)
+		out += "\n"
+		for(body) __c:
+			out += __c.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		for(body) __c:
+			__childs.push(__c)
+		return __childs

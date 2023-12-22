@@ -39,6 +39,8 @@ class parser:
 		
 		if next.type == lex.LET:
 			return asig()
+		elif next.type == lex.DEF:
+			return func()
 		else:
 			return logic()
 
@@ -233,6 +235,79 @@ class parser:
 		if expr == nil:
 			return nil
 		return AST_decl{ident.value, expr}
+
+	def func() -> AST_node?:
+		let consume = fn(tok_type, error_str):
+			let err, tok = lexer.consume(tok_type, error_str)
+			if tok == nil or not err:
+				// has_error = true
+				return nil from func
+			tok
+
+		lexer.consume(lex.DEF, "expected def") // ät "def"
+		let name = consume(lex.IDENT, "expected function name")
+		guard name is lex.string_token:
+			print("func name should be string")
+			return from program
+		consume(lex.LPAR, "expected parantese in function declaration")
+		struct arg:
+			name: string
+			type: type_struct
+		let args = []
+		var done = false
+		while not done:
+			let arg_name_tok = consume(lex.IDENT, "argument name neaded")
+			guard arg_name_tok is lex.string_token:
+				print("token should be string_token")
+				return from program
+			let arg_name = arg_name_tok.value
+			consume(lex.COLLON, "expected type specifier for function argument")
+			let arg_type_tok = consume(lex.IDENT, "argument type neaded")
+			guard arg_type_tok is lex.string_token:
+				print("token should be string_token")
+				return from program
+			let arg_type = string_to_type(arg_type_tok.value)
+			args.push(arg{arg_name, arg_type})
+			let next_tok = lexer.next()
+			if next_tok == nil or next_tok.type == lex.RPAR:
+				done = true
+			elif next_tok.type != lex.COMMA:
+				error("expected comma in argument list", next_tok)
+		lexer.consume(lex.AROW, "function arrow neaded")
+		let func_type_tok = consume(lex.IDENT, "function type neaded")
+		guard func_type_tok is lex.string_token:
+			print("token should be string_token")
+			return from program
+		let func_type = string_to_type(func_type_tok.value)
+		let func_block = block()
+		let arg_types = []
+		let arg_names = []
+		for(args) v:
+			arg_types.push(v.type)
+			arg_names.push(v.name)
+		return AST_func_decl {
+			name.value,
+			type_struct(func_type, arg_types),
+			arg_names,
+			func_block
+		}
+
+	def block() -> [AST_node]:
+		lexer.optional(lex.LF)
+		lexer.consume(lex.LCURLPAR, "expected \'\{\' at begining of block")
+		lexer.optional(lex.LF)
+		let statments = []
+		while true:
+			let tok = lexer.peek()
+			if tok != nil and tok.type == lex.RCURLPAR:
+				lexer.next()
+				return statments
+			else:
+				let statment = top_expr()
+				lexer.consume(lex.LF, "expected line fead after statment")
+				guard statment != nil:
+					return []
+				statments.push(statment)
 
 
 	def error(e, token):

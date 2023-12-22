@@ -2,6 +2,10 @@ program -> (expr ("\n" expr)*)?
 
 expr : logic
      | asig
+     | func
+
+arg : IDENT ":" IDENT
+func : "def" IDENT "(" (arg ("," arg)*) ")" "->" IDENT "{" "\n"? program "}"
 
 logic : comp ("and" logic)*
       | comp ("or" logic)*

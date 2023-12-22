@@ -24,7 +24,8 @@
 		{ "name": "bool_literal", "childs": [], "const": [["value", "bool"]]},
 		{ "name": "not", "childs": [["body"]], "const": []},
 		{ "name": "call", "childs": [["func"], ["args", "*node"]], "const": [["type", "type_struct", "type_struct(UNSET)"]]},
-		{ "name": "decl", "childs": [["body"]], "const": [["name", "string"], ["type", "type_struct", "type_struct(UNSET)"]]}
+		{ "name": "decl", "childs": [["body"]], "const": [["name", "string"], ["type", "type_struct", "type_struct(UNSET)"]]},
+		{ "name": "func_decl", "childs": [["body", "*node"]], "const": [["name", "string"], ["type", "type_struct"], ["arg_names", "[string]"]]}
 	],
 	"base": "node",
 	"name_pre": "AST_"

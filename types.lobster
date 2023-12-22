@@ -35,3 +35,13 @@ def is_num(type):
 		case INT: true
 		case FLOAT: true
 		default: false
+
+def string_to_type(type_string: string):
+	let type_int = switch type_string:
+		case "int": INT
+		case "nil": NIL
+		case "bool": BOOL
+		case "float": FLOAT
+		case "str": STRING
+		default: UNSET
+	return type_struct(type_int)
