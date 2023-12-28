@@ -6,9 +6,9 @@ import type_pass
 import pass_man
 import types
 
-let prog = read_file("main.unocc")
+let prog = read_file("main.cnail")
 guard prog:
-	print("create main.unocc")
+	print("create main.cnail")
 
 let cmd_raw = command_line_arguments()
 var cmd: string = ""

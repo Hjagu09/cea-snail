@@ -46,6 +46,8 @@ class type_pass : ast_pass
 			case AST_var: visit_var(node, error)
 			case AST_call: visit_call(node, error)
 			case AST_func_decl: visit_func(node, error)
+			case AST_if: visit_if(node, error)
+			case AST_else: visit_else(node, error)
 			default:
 				print("type_pass: unknown ast type {node}")
 				return type_struct(UNSET)
@@ -209,16 +211,34 @@ class type_pass : ast_pass
 			return type.func.return_type
 
 	def visit_func(node: AST_func_decl, error) -> type_struct:
-		current_scope.push_scope()
-		for(node.arg_names.length()) i:
-			assert node.type.func
-			current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
-		for(node.body) child:
-			let _ = visit(child, error)
-			pass()
-		current_scope.pop_scope()
+		current_scope.scope():
+			for(node.arg_names.length()) i:
+				assert node.type.func
+				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
+			for(node.body) child:
+				let _ = visit(child, error)
+				pass()
 		current_scope.set(node.name, node.type)
 		current_scope.print_scope()
+		return type_struct(UNSET)
+
+	def visit_if(node, error) -> type_struct:
+		current_scope.scope():
+			for(node.body) child:
+				let _ = visit(child, error)
+				pass()
+		if node.else_part != nil:
+			let _ = visit(node.else_part, error)
+			pass()
+		guard visit(node.condition, error) == BOOL:
+			error("if condition neads to be of type bool", node)
+			return type_struct(UNSET)
+		return type_struct(UNSET)
+	def visit_else(node, error) -> type_struct:
+		current_scope.scope():
+			for(node.body) child:
+				let _ = visit(child, error)
+				pass()
 		return type_struct(UNSET)
 
 

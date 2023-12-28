@@ -32,6 +32,10 @@ class scope:
 		if current_scope.parent:
 			current_scope = current_scope.parent
 		return this
+	def scope(do):
+		push_scope()
+		do()
+		pop_scope()
 
 	def set(key: string, type: type_struct):
 		current_scope.set(key, type)

@@ -1,8 +1,12 @@
-program -> (expr ("\n" expr)*)?
+program -> (expr ("\n"? expr)*)?
 
 expr : logic
      | asig
      | func
+     | if_else
+
+if_else : "if" logic "{" "\n"? program }"
+          ("\n"? "else" "{" "\n"? program "}")?
 
 arg : IDENT ":" IDENT
 func : "def" IDENT "(" (arg ("," arg)*) ")" "->" IDENT "{" "\n"? program "}"

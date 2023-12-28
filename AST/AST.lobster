@@ -362,3 +362,36 @@ class AST_func_decl : AST_node
 		for(body) __c:
 			__childs.push(__c)
 		return __childs
+class AST_if : AST_node
+	body: [AST_node]
+	condition: AST_node
+	else_part: AST_node?
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "if:"
+		out += "\n"
+		for(body) __c:
+			out += __c.str(ind + 1) + ""
+		out += condition.str(ind + 1) + ""
+		if else_part != nil:
+			out += else_part.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		for(body) __c:
+			__childs.push(__c)
+		__childs.push(condition)
+		__childs.push(else_part)
+		return __childs
+class AST_else : AST_node
+	body: [AST_node]
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "else:"
+		out += "\n"
+		for(body) __c:
+			out += __c.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		for(body) __c:
+			__childs.push(__c)
+		return __childs

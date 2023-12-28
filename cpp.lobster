@@ -31,6 +31,10 @@ class cpp_code_builder:
 		let body = cpp_code_builder{false}
 		body_builder(body)
 		builder_func(signature, body)
+	def block(body):
+		code_line("{{")
+		body()
+		code_line("}}")
 
 	def cvar(name, type):
 		prots.push("{type} {name}")
@@ -151,6 +155,8 @@ class to_cpp : codegen
 			case AST_expr: visit_expr(node)
 			case AST_call: visit_call(node)
 			case AST_func_decl: visit_func_decl(node)
+			case AST_if: visit_if(node)
+			case AST_else: visit_else(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -254,3 +260,24 @@ class to_cpp : codegen
 			for(node.body) child:
 				func_builder.code_line("{eval(child, func_builder)};")
 		return node.name
+
+	def visit_if(node: AST_if) -> string:
+		// condition
+		builder.code_line("if ({eval(node.condition)})")
+		builder.block():
+			// if body
+			for(node.body) child:
+				eval(child)
+		// if there is no else part, return
+		guard node.else_part:
+			return "NULL"
+		
+		// else do the else
+		eval(node.else_part)
+		return "NULL"
+	def visit_else(node: AST_else) -> string:
+		builder.code_line("else")
+		builder.block():
+			for(node.body) child:
+				eval(child)
+		return "NULL"

@@ -31,7 +31,9 @@ enum token_types:
 	LCURLPAR,
 	RCURLPAR,
 	COLLON,
-	AROW
+	AROW,
+	IF,
+	ELSE,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -71,6 +73,8 @@ def token_type_string(type: int) -> string:
 		case RCURLPAR: "RCURLPAR"
 		case COLLON: "COLLON"
 		case AROW: "AROW"
+		case IF: "IF"
+		case ELSE: "ELSE"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -271,6 +275,10 @@ class lexer:
 					token {LET, start, len}
 				case "def":
 					token{DEF, start, len}
+				case "if":
+					token{IF, start, len}
+				case "else":
+					token{ELSE, start, len}
 				default:
 					string_token {IDENT, start, len, name}
 

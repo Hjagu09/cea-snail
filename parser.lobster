@@ -41,6 +41,8 @@ class parser:
 			return asig()
 		elif next.type == lex.DEF:
 			return func()
+		elif next.type == lex.IF or next.type == lex.ELSE:
+			return if_else()
 		else:
 			return logic()
 
@@ -308,6 +310,43 @@ class parser:
 				guard statment != nil:
 					return []
 				statments.push(statment)
+
+	def if_else() -> AST_node?:
+		// IF eller ELSE...
+		let keyword = lexer.peek()
+		guard keyword and (keyword.type == lex.IF or keyword.type == lex.ELSE):
+			// annars är det ett fel
+			return nil
+		lexer.next() // ät if/else
+		
+		var condition = nil
+		if keyword.type == lex.IF:
+			// ät up kravet...
+			condition = logic()
+			// och se till att det gick vägen
+			if condition == nil:
+				return nil
+		
+		// huvuddelen av greningen
+		let body = block()
+
+		if keyword.type == lex.IF:
+			// detta vet vi
+			assert condition
+		
+			// kolla efter else
+			// är nil om det inte fanns
+			lexer.optional(lex.LF)
+			let next = if_else()
+			
+			// generara node
+			return AST_if {
+				body,
+				condition,
+				next
+			}
+		else: // if keyword.type == lex.ELSE
+			return AST_else { body }
 
 
 	def error(e, token):

@@ -44,7 +44,20 @@ with open("AST.json") as file:
 			type = "node"
 			if len(child) > 1:
 				type = child[1]
-			if type[0:1] != "*":
+			if type[-1] == "?":
+				nodes.append(
+					f"	{child[0]}: {data['name_pre'] + type}"
+				)
+				to_str.append(
+					f"\t\tif {child[0]} != nil:"
+				)
+				to_str.append(
+					f"\t\t\tout += {child[0]}.str(ind + 1) + \"\""
+				)
+				all_childs.append(
+					f"\t\t__childs.push({child[0]})"
+				)
+			elif type[0:1] != "*":
 				nodes.append(
 					f"	{child[0]}: {data['name_pre'] + type}"
 				)
