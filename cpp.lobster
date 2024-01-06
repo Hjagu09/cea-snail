@@ -157,6 +157,7 @@ class to_cpp : codegen
 			case AST_func_decl: visit_func_decl(node)
 			case AST_if: visit_if(node)
 			case AST_else: visit_else(node)
+			case AST_ret: visit_return(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -259,7 +260,7 @@ class to_cpp : codegen
 		) func_builder:
 			for(node.body) child:
 				func_builder.code_line("{eval(child, func_builder)};")
-		return node.name
+		return builder.cpp_ident(node.name)
 
 	def visit_if(node: AST_if) -> string:
 		// condition
@@ -267,7 +268,7 @@ class to_cpp : codegen
 		builder.block():
 			// if body
 			for(node.body) child:
-				eval(child)
+				builder.code_line("{eval(child)};")
 		// if there is no else part, return
 		guard node.else_part:
 			return "NULL"
@@ -279,5 +280,8 @@ class to_cpp : codegen
 		builder.code_line("else")
 		builder.block():
 			for(node.body) child:
-				eval(child)
+				builder.code_line("{eval(child)};")
 		return "NULL"
+
+	def visit_return(node: AST_ret) -> string:
+		return "return {eval(node.body)}"

@@ -48,6 +48,9 @@ class type_pass : ast_pass
 			case AST_func_decl: visit_func(node, error)
 			case AST_if: visit_if(node, error)
 			case AST_else: visit_else(node, error)
+			case AST_ret:
+				let _ = visit(node.body, error)
+				type_struct(UNSET)
 			default:
 				print("type_pass: unknown ast type {node}")
 				return type_struct(UNSET)
@@ -208,9 +211,11 @@ class type_pass : ast_pass
 					error("wrong type for function argument {string(i)}", node)
 					return type_struct(UNSET)
 			node.type = type.func.return_type
+			print("ret type: {type.func.return_type} = {node.type}; {node.func.name}")
 			return type.func.return_type
 
 	def visit_func(node: AST_func_decl, error) -> type_struct:
+		current_scope.set(node.name, node.type)
 		current_scope.scope():
 			for(node.arg_names.length()) i:
 				assert node.type.func
@@ -218,7 +223,6 @@ class type_pass : ast_pass
 			for(node.body) child:
 				let _ = visit(child, error)
 				pass()
-		current_scope.set(node.name, node.type)
 		current_scope.print_scope()
 		return type_struct(UNSET)
 

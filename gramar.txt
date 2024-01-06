@@ -4,6 +4,9 @@ expr : logic
      | asig
      | func
      | if_else
+     | ret
+
+ret : "return" expr
 
 if_else : "if" logic "{" "\n"? program }"
           ("\n"? "else" "{" "\n"? program "}")?

@@ -6,4 +6,9 @@ def fib(x: int) -> int {
 	}
 }
 
-fib(100)
+def hello(bla: int) -> str {
+	return "Hello World"
+}
+
+fib(5)
+print(hello(1))

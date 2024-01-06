@@ -4,6 +4,7 @@ import cpp
 import from "./ast_pass/"
 import type_pass
 import pass_man
+import ret_pass
 import types
 
 let prog = read_file("main.cnail")
@@ -57,6 +58,7 @@ if root == nil:
 
 let analyser = pass_man{[
 	type_pass(),
+	ret_pass{}
 ]}
 let analyser_result = analyser.run_passes(root, debug)
 if not all(analyser_result):

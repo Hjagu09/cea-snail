@@ -6,6 +6,7 @@ with open("AST.json") as file:
 		"import from \"..\"",
 		"import types",
 		f"abstract class {data['name_pre'] + data['base']}:",
+		"\tdef get_type() -> type_struct: return type_struct(UNSET)",
 		"	def str(ind: int = 0) -> string: return \"  \".repeat_string(ind) + \"node\"",
 		"\tdef all_childs() -> [AST_node]: return []"
 	]
@@ -55,7 +56,10 @@ with open("AST.json") as file:
 					f"\t\t\tout += {child[0]}.str(ind + 1) + \"\""
 				)
 				all_childs.append(
-					f"\t\t__childs.push({child[0]})"
+					f"\t\tif {child[0]} != nil:"
+				)
+				all_childs.append(
+					f"\t\t\t__childs.push({child[0]})"
 				)
 			elif type[0:1] != "*":
 				nodes.append(
@@ -81,4 +85,14 @@ with open("AST.json") as file:
 		all_childs.append("\t\treturn __childs")
 		nodes.append("\n".join(to_str))
 		nodes.append("\n".join(all_childs))
+		if node["name"] == "mult":
+			nodes.append("\n".join([
+				"\tdef get_type() -> type_struct:",
+				"\t\treturn type_left"
+			]))
+		else:
+			nodes.append("\n".join([
+				"\tdef get_type() -> type_struct:",
+				"\t\treturn type"
+			]))
 	print("\n".join(nodes))

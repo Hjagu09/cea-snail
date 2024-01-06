@@ -34,6 +34,7 @@ enum token_types:
 	AROW,
 	IF,
 	ELSE,
+	RET,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -55,6 +56,7 @@ def token_type_string(type: int) -> string:
 		case EOF: "EOF"
 		case LF: "LF"
 		case EQUAL_EQUAL: "EQUAL_EQUAL"
+		case RET: "RET"
 		case NOT_EQUAL: "NOT_EQUAL"
 		case LESS_EQUAL: "LESS_EQUAL"
 		case GREATER_EQUAL: "GREATER_EQUAL"
@@ -149,7 +151,7 @@ class lexer:
 				let delim = prog.at(pos + offset)
 				let start_i = offset + pos
 				offset++
-				var name_utf8 = []
+				let name_utf8 = []
 				while prog.at(pos + offset) != delim:
 					if prog.at(pos + offset) == '\n' or prog.at(pos + offset) == 0:
 						if move:
@@ -251,15 +253,17 @@ class lexer:
 				token {LF, start, 1}
 			default:
 				nil
-
+		
+		// chek if this is an valid identifeier/keyword
 		if is_alpha_under(prog.at(pos + offset)) and tok == nil:
-			var name_utf8 = []
+			let name_utf8 = []
 			while is_alpha_num_under(prog.at(pos + offset)):
 				name_utf8.push(prog.at(pos + offset))
 				offset++
 			let name = unicode_to_string(name_utf8)
 			let len = name_utf8.length()
 			let start = pos + offset - len
+			// match against keywords
 			tok = switch name:
 				case "and":
 					token {AND, start, len}
@@ -279,7 +283,10 @@ class lexer:
 					token{IF, start, len}
 				case "else":
 					token{ELSE, start, len}
+				case "return":
+					token{RET, start, len}
 				default:
+					// if nothing matched it's a identifeier
 					string_token {IDENT, start, len, name}
 
 		elif is_num(prog.at(pos + offset)) and tok == nil:

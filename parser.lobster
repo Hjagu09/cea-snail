@@ -43,6 +43,8 @@ class parser:
 			return func()
 		elif next.type == lex.IF or next.type == lex.ELSE:
 			return if_else()
+		elif next.type == lex.RET:
+			return ret()
 		else:
 			return logic()
 
@@ -247,7 +249,7 @@ class parser:
 			tok
 
 		lexer.consume(lex.DEF, "expected def") // ät "def"
-		let name = consume(lex.IDENT, "expected function name")
+		let name = consume(lex.IDENT, "expected function name") // eat function name
 		guard name is lex.string_token:
 			print("func name should be string")
 			return from program
@@ -258,7 +260,7 @@ class parser:
 		let args = []
 		var done = false
 		while not done:
-			let arg_name_tok = consume(lex.IDENT, "argument name neaded")
+			let arg_name_tok = consume(lex.IDENT, "argument name neaded") // argument name...
 			guard arg_name_tok is lex.string_token:
 				print("token should be string_token")
 				return from program
@@ -268,7 +270,7 @@ class parser:
 			guard arg_type_tok is lex.string_token:
 				print("token should be string_token")
 				return from program
-			let arg_type = string_to_type(arg_type_tok.value)
+			let arg_type = string_to_type(arg_type_tok.value)            // and argument type
 			args.push(arg{arg_name, arg_type})
 			let next_tok = lexer.next()
 			if next_tok == nil or next_tok.type == lex.RPAR:
@@ -347,6 +349,25 @@ class parser:
 			}
 		else: // if keyword.type == lex.ELSE
 			return AST_else { body }
+	
+	// return statment
+	def ret() -> AST_node?:
+		// helper for eating tokens
+		let consume = fn(tok_type, error_str):
+			let err, tok = lexer.consume(tok_type, error_str)
+			if tok == nil or not err:
+				// has_error = true
+				return nil from ret
+			tok
+		
+		// consume "return" keyword
+		consume(lex.RET, "expected return keyword in return statment")
+		// return value
+		let body = top_expr()
+		guard body:
+			return nil
+		// construct node
+		return AST_ret{ body }
 
 
 	def error(e, token):
