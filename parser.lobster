@@ -259,24 +259,28 @@ class parser:
 			type: type_struct
 		let args = []
 		var done = false
-		while not done:
-			let arg_name_tok = consume(lex.IDENT, "argument name neaded") // argument name...
-			guard arg_name_tok is lex.string_token:
-				print("token should be string_token")
-				return from program
-			let arg_name = arg_name_tok.value
-			consume(lex.COLLON, "expected type specifier for function argument")
-			let arg_type_tok = consume(lex.IDENT, "argument type neaded")
-			guard arg_type_tok is lex.string_token:
-				print("token should be string_token")
-				return from program
-			let arg_type = string_to_type(arg_type_tok.value)            // and argument type
-			args.push(arg{arg_name, arg_type})
-			let next_tok = lexer.next()
-			if next_tok == nil or next_tok.type == lex.RPAR:
-				done = true
-			elif next_tok.type != lex.COMMA:
-				error("expected comma in argument list", next_tok)
+		let first_arg = lexer.peek()
+		if first_arg != nil and first_arg.type == lex.IDENT:
+			while not done:
+				let arg_name_tok = consume(lex.IDENT, "argument name neaded") // argument name...
+				guard arg_name_tok is lex.string_token:
+					print("token should be string_token")
+					return from program
+				let arg_name = arg_name_tok.value
+				consume(lex.COLLON, "expected type specifier for function argument")
+				let arg_type_tok = consume(lex.IDENT, "argument type neaded")
+				guard arg_type_tok is lex.string_token:
+					print("token should be string_token")
+					return from program
+				let arg_type = string_to_type(arg_type_tok.value)            // and argument type
+				args.push(arg{arg_name, arg_type})
+				let next_tok = lexer.next()
+				if next_tok == nil or next_tok.type == lex.RPAR:
+					done = true
+				elif next_tok.type != lex.COMMA:
+					error("expected comma in argument list", next_tok)
+		else:
+			lexer.consume(lex.RPAR, "expected closing parantese")
 		lexer.consume(lex.AROW, "function arrow neaded")
 		let func_type_tok = consume(lex.IDENT, "function type neaded")
 		guard func_type_tok is lex.string_token:
