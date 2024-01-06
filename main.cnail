@@ -1,14 +1,9 @@
-def fib(x: int) -> int {
+def bad_fib(x: int) -> int {
 	if x == 0 or x == 1 {
 		return 1
 	} else {
-		return fib(x - 1) + fib(x - 2)
+		return bad_fib(x - 1) + bad_fib(x - 2)
 	}
 }
 
-def hello() -> str {
-	return "Hello World"
-}
-
-fib(5)
-print(hello())
+print(int_to_str(bad_fib(20)))

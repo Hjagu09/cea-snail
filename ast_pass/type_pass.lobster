@@ -2,6 +2,8 @@ import pass
 import from ".."
 import types
 import scope
+import parser
+import lexer
 
 class type_pass : ast_pass
 	current_scope: scope
@@ -245,16 +247,29 @@ class type_pass : ast_pass
 				pass()
 		return type_struct(UNSET)
 
+constructor type_pass(new_scope):
+	return type_pass{ new_scope }
+
+def std_lib_funcs() -> scope:
+	let file = read_file("./rc/c++/lib_funcs.cnail")
+	guard file:
+		print("can not read ./rc/c++/lib_funcs.cnail")
+		return from program
+	let lexer = lex.lexer{ file }
+	let parser = par.parser{ lexer }
+	let root = parser.parse()
+	guard root:
+		set_exit_code(1) // jag valde 1 någon annans stans, vet inte varför
+		return from program
+	let type_reader = type_pass( scope{ } )
+	type_reader.analyse(root) e, node:
+		print("ERROR IN LIB_FUNCS: [{e}]: {node}")
+		return from program
+	print("-----------------\n    std lib funcs")
+	type_reader.current_scope.print_scope()
+	print("=================")
+	return type_reader.current_scope
 
 constructor type_pass():
-	let new_pass = type_pass{scope{}}
-	new_pass.current_scope.set(
-		"print",
-		type_struct(
-			type_struct(NIL),
-			[
-				type_struct(STRING)
-			]
-		)
-	)
+	let new_pass = type_pass{ std_lib_funcs() }
 	return new_pass

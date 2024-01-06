@@ -1,0 +1,4 @@
+def print(x: str) -> void { }
+def int_to_str(x: int) -> str { }
+def float_to_str(x: float) -> str { }
+def int_to_float(x: int) -> float { }

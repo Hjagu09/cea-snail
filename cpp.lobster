@@ -76,41 +76,32 @@ def type_to_cpp(type: type_struct) -> string:
 class to_cpp : codegen
 	builder = cpp_code_builder{true}
 	def generate() -> to_cpp:
-		builder.include("#include <math.h>")
-		builder.include("#include <cstddef>")
-		builder.include("#include <iostream>")
-		builder.include("#include <string>")
-		builder.include("#define EXPOSE(NAME) ___identifier___##NAME##___")
-		// här måste vi va färdiga med "#include ..."s om vi ska generera snygg kod
-
-		builder.func(
-			"std::string repeat(size_t n, const std::string& str)",
-			"""
-				if (n == 0 || str.empty()) return {};
-				if (n == 1) return str;
-				const auto period = str.size();
-				if (period == 1) return std::string(n, str.front());
-
-				std::string ret(str);
-				ret.reserve(period * n);
-				std::size_t m {2};
-				for (; m < n; m *= 2) ret += ret;
-				ret.append(ret.c_str(), (n - (m / 2)) * period);
-				return ret;
-			""".replace_string("\t", "")
-		)
-		builder.func(
-			"void EXPOSE(print)(std::string str)",
-			"""
-				std::cout << str << std::endl;
-			""".replace_string("\t", "")
-		)
+		load_std_lib()
 		visit_root(ast)
 		return this
 	def get_code() -> string:
 		return builder.get_code()
 	def error(node):
 		print("internalt codegen cpp error, {node.str()}")
+
+	def load_std_lib():
+		let includes = scan_folder("./rc/c++/include") // what headers to include
+		let std_libs = scan_folder("./rc/c++/lib/") // other code that may use those headers
+		guard includes != nil:
+			print("can\'t find std_include")
+			return from program
+		guard std_libs != nil:
+			print("can\'t find std_lib")
+			return from program
+		for(includes) include_file_name:
+			let include = read_file("./rc/c++/include/" + include_file_name)
+			assert include != nil
+			builder.include(include)
+		for(std_libs) include_file_name:
+			let include = read_file("./rc/c++/lib/" + include_file_name)
+			assert include != nil
+			builder.include(include)
+		
 
 	def visit_root(node: AST_node) -> void:
 		if node is AST_root:
