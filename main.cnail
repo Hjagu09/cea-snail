@@ -6,4 +6,4 @@ def bad_fib(x: int) -> int {
 	}
 }
 
-print(int_to_str(bad_fib(20)))
+print_int(bad_fib(20))

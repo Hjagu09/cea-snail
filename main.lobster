@@ -5,11 +5,13 @@ import from "./ast_pass/"
 import type_pass
 import pass_man
 import ret_pass
+import pre_procces
 import types
 
-let prog = read_file("main.cnail")
+var prog = read_file("main.cnail")
 guard prog:
 	print("create main.cnail")
+prog = pre.pre_procces(prog)
 
 let cmd_raw = command_line_arguments()
 var cmd: string = ""
