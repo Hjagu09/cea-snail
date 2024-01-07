@@ -191,6 +191,7 @@ class type_pass : ast_pass
 		if type.eq(UNSET):
 			error("unknown identifier", node)
 			return type_struct(UNSET)
+		node.type = type
 		return type
 
 	def visit_call(node: AST_call, error) -> type_struct:

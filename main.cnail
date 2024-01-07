@@ -1,6 +1,6 @@
 def bad_fib(x: int) -> int {
 	if x == 0 or x == 1 {
-		return 1
+		return x
 	} else {
 		return bad_fib(x - 1) + bad_fib(x - 2)
 	}
