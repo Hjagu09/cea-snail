@@ -5,6 +5,10 @@ namespace par
 
 def ret_sig(l: AST_node, r: AST_node) -> AST_node?
 
+struct func_arg:
+	name: string
+	type: type_struct
+
 class parser:
 	lexer: lex.lexer
 	has_error: bool = false
@@ -194,14 +198,31 @@ class parser:
 		lexer.next() // consume (
 		let args = args_list() // list of args
 		if args != nil and func_name != nil:
-			has_error = not lexer.consume(lex.RPAR, "unmatched parantese in function call") or has_error
 			let next = lexer.peek()
-			if next != nil and next.type == lex.LCURLPAR:
-				// lambda effter funktionen. ska med i "args"
+			if next != nil and next.type == lex.PIPE:
+				lexer.next() // eat pipe (aka "|")
+
+				// eat lambda arguments, arrow and return type
+				let lambda_args = arg_delc_list()
+				has_error = not lexer.consume(lex.AROW, "expected lambda return type specifier") or has_error
+				let lambda_return_type = type_stmt()
+
+				// separate names and types
+				var lambda_args_types = []
+				var lambda_args_names = []
+				for(lambda_args) arg:
+					lambda_args_names.push(arg.name)
+					lambda_args_types.push(arg.type)
+
+				// lambda efter funktionen. ska med i "args"
+				// ät också )
+				has_error = not lexer.consume(lex.RPAR, "unmatched parantese in function call") or has_error
 				let body = block()
-				let type = type_struct(type_struct(NIL), [])
-				let lambda_node = AST_lambda {type, [], body}
+				let type = type_struct(lambda_return_type, lambda_args_types)
+				let lambda_node = AST_lambda {type, lambda_args_names, body}
 				args.push(lambda_node)
+			else:
+				has_error = not lexer.consume(lex.RPAR, "unmatched parantese in function call") or has_error
 			return AST_call{func_name, args}
 		else:
 			return nil
@@ -215,7 +236,7 @@ class parser:
 				return nil
 			args.push(arg)
 			next = lexer.peek()
-			while next != nil and next.type != lex.RPAR:
+			while next != nil and next.type == lex.COMMA:
 				let err = not lexer.consume(lex.COMMA, "expected comma")
 				if err:
 					has_error = true
@@ -250,6 +271,32 @@ class parser:
 			return nil
 		return AST_decl{ident.value, expr}
 
+	def arg_delc_list() -> [func_arg]:
+		let consume = fn(tok_type, error_str):
+			let err, tok = lexer.consume(tok_type, error_str)
+			if tok == nil or not err:
+				// has_error = true
+				return [] from arg_delc_list
+			tok
+		let args = []
+		var done = false
+		let first_arg = lexer.peek()
+		if first_arg != nil and first_arg.type == lex.IDENT:
+			while not done:
+				let arg_name_tok = consume(lex.IDENT, "argument name neaded") // argument name...
+				guard arg_name_tok is lex.string_token:
+					print("token should be string_token")
+					return from program
+				let arg_name = arg_name_tok.value
+				consume(lex.COLLON, "expected type specifier for function argument")
+				args.push(func_arg{arg_name, type_stmt()})
+				let next_tok = lexer.peek()
+				if next_tok != nil and next_tok.type == lex.COMMA:
+					lexer.next()
+				else:
+					done = true
+		return args
+
 	def func() -> AST_node?:
 		let consume = fn(tok_type, error_str):
 			let err, tok = lexer.consume(tok_type, error_str)
@@ -264,28 +311,8 @@ class parser:
 			print("func name should be string")
 			return from program
 		consume(lex.LPAR, "expected parantese in function declaration")
-		struct arg:
-			name: string
-			type: type_struct
-		let args = []
-		var done = false
-		let first_arg = lexer.peek()
-		if first_arg != nil and first_arg.type == lex.IDENT:
-			while not done:
-				let arg_name_tok = consume(lex.IDENT, "argument name neaded") // argument name...
-				guard arg_name_tok is lex.string_token:
-					print("token should be string_token")
-					return from program
-				let arg_name = arg_name_tok.value
-				consume(lex.COLLON, "expected type specifier for function argument")
-				args.push(arg{arg_name, type_stmt()})
-				let next_tok = lexer.next()
-				if next_tok == nil or next_tok.type == lex.RPAR:
-					done = true
-				elif next_tok.type != lex.COMMA:
-					error("expected comma in argument list", next_tok)
-		else:
-			lexer.consume(lex.RPAR, "expected closing parantese")
+		let args = arg_delc_list()
+		lexer.consume(lex.RPAR, "expected closing parantese")
 		lexer.consume(lex.AROW, "function arrow neaded")
 		let func_type = type_stmt()
 		let func_block = block()

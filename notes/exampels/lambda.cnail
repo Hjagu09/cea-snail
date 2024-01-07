@@ -1,0 +1,6 @@
+def foo(a: int, b: fn int nil) -> nil {
+	b(a)
+}
+foo(100 | x: int → nil) {
+	print_int(x)
+}

@@ -36,6 +36,7 @@ enum token_types:
 	ELSE,
 	RET,
 	FN,
+	PIPE, // altså |, vet inte vad den ska kallas
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -80,6 +81,7 @@ def token_type_string(type: int) -> string:
 		case IF: "IF"
 		case ELSE: "ELSE"
 		case FN: "FN"
+		case PIPE: "PIPE"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -225,6 +227,9 @@ class lexer:
 					token {NOT_EQUAL, pos + offset - 2, 2}
 				else:
 					nil
+			case '|':
+				offset++
+				token {PIPE, pos + offset - 1, 1}
 			case '<':
 				offset++
 				if prog.at(pos + offset) == '=':

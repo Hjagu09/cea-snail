@@ -252,7 +252,14 @@ class to_cpp : codegen
 
 	def visit_lambda(node: AST_lambda) -> string:
 		let name = builder.get_var_name()
-		builder.code_line("auto {name} = [&]() -> void {{")
+		var arg_list = ""
+		assert node.type.func
+		for(node.arg_names) arg_name, index:
+			if index != 0:
+				arg_list += ","
+			arg_list += "{type_to_cpp(node.type.func.argumentents[index])} {builder.cpp_ident(arg_name)}"
+	
+		builder.code_line("auto {name} = [&]({arg_list}) -> {type_to_cpp(node.type.func.return_type)} {{")
 		for(node.body) child:
 			builder.code_line("{eval(child)};")
 		builder.code_line("}};")

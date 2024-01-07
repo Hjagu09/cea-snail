@@ -63,3 +63,14 @@ fn int, float int
 ```
 kanske, men för nu har vi kvar pilen
 fuck it vi kör utan pil _/('U')/C[]
+
+--------------------------------------------------------
+
+# nyt syntax
+
+för att kunna ta bort \n måste vi ha nytt syntax.
+
+1. `foo(100, "Hello"): a: int, b: int → int { }`
+2. `foo(100, "Hello" | a: int, b: int → int) { }`
+
+tror **två** är bäst
