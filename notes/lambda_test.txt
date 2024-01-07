@@ -1,0 +1,57 @@
+type_struct{
+	FUNC, // foo aka huvud funktionen
+	func_class{
+		type_struct{
+			NIL, // get inget tillbaka
+			nil
+		},
+		[ // men får
+			type_struct{
+				FUNC, // en annan funktion
+				func_class{
+					type_struct{
+						NIL, // som inte heller get något tillbaka
+						nil
+					},
+					[ // men får två nummer
+						type_struct{
+							INT,
+							nil
+						},
+						type_struct{
+							INT,
+							nil
+						}
+					]
+				}
+			}
+		]
+	}
+}
+// GODKÄNT!!
+
+
+
+type_struct{ // en funktion
+	FUNC,
+	func_class{
+		type_struct{
+			NIL, // som inte get något tillbaka
+			nil
+		},
+		[ // men får en funktion
+			type_struct{
+				FUNC,
+				func_class{
+					type_struct{
+						NIL, // som inte ger något tillbaka
+						nil
+					},
+					[ // och inte får någonting
+					]
+				}
+			}
+		]
+	}
+}
+// GODKÄNT!!

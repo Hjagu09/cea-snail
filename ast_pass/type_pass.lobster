@@ -50,6 +50,7 @@ class type_pass : ast_pass
 			case AST_func_decl: visit_func(node, error)
 			case AST_if: visit_if(node, error)
 			case AST_else: visit_else(node, error)
+			case AST_lambda: visit_lambda(node, error)
 			case AST_ret:
 				let _ = visit(node.body, error)
 				type_struct(UNSET)
@@ -216,6 +217,17 @@ class type_pass : ast_pass
 			node.type = type.func.return_type
 			print("ret type: {type.func.return_type} = {node.type}; {node.func.name}")
 			return type.func.return_type
+
+	def visit_lambda(node: AST_lambda, error) -> type_struct:
+		current_scope.scope():
+			assert node.type.func
+			for(node.arg_names.length()) i:
+				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
+			for(node.body) child:
+				let _ = visit(child, error)
+				pass()
+		current_scope.print_scope()
+		return node.type
 
 	def visit_func(node: AST_func_decl, error) -> type_struct:
 		current_scope.set(node.name, node.type)

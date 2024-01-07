@@ -70,7 +70,15 @@ def type_to_cpp(type: type_struct) -> string:
 		case BOOL: "bool"
 		case UNSET: "/* ERROR unset type */"
 		case NIL: "void" // kanske måste va void*
-		case FUNC: "/* ERROR TODO func type to cpp"
+		case FUNC:
+			assert type.func
+			var type_str = "std::function<{type_to_cpp(type.func.return_type)}("
+			for(type.func.argumentents) arg, i:
+				if i != 0:
+					type_str += ","
+				type_str += type_to_cpp(arg)
+			type_str += ")>"
+			type_str
 		default: "/* ERROR unknown type (cpp.lobster 53) */"
 
 class to_cpp : codegen
@@ -149,6 +157,7 @@ class to_cpp : codegen
 			case AST_if: visit_if(node)
 			case AST_else: visit_else(node)
 			case AST_ret: visit_return(node)
+			case AST_lambda: visit_lambda(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -240,6 +249,14 @@ class to_cpp : codegen
 		else:
 			builder.code_line("{builder.cpp_ident(node.func.name)}({args});")
 			return "NULL"
+
+	def visit_lambda(node: AST_lambda) -> string:
+		let name = builder.get_var_name()
+		builder.code_line("auto {name} = [&]() -> void {{")
+		for(node.body) child:
+			builder.code_line("{eval(child)};")
+		builder.code_line("}};")
+		return name
 
 	def visit_func_decl(node: AST_func_decl) -> string:
 		assert node.type.func

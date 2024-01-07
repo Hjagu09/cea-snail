@@ -18,12 +18,12 @@ struct type_struct:
 	func: func_class?
 	def eq(comp_type: int) -> bool:
 		return comp_type == type
-	def eq(comp: type_struct) -> bool:
-		return type == comp.type
+	def eq(comp: type_struct) -> bool: 
+		return type == comp.type and func.equal(comp.func)
 	def operator==(comp_type: int) -> bool:
 		return comp_type == type
 	def operator==(comp: type_struct) -> bool:
-		return type == comp.type
+		return eq(comp)
 
 constructor type_struct(rtype: type_struct, argumentents: [type_struct]):
 	return type_struct{FUNC, func_class{rtype, argumentents}}

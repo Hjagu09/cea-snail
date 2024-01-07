@@ -445,6 +445,25 @@ class AST_func_decl : AST_node
 		return __childs
 	def get_type() -> type_struct:
 		return type
+class AST_lambda : AST_node
+	type: type_struct
+	arg_names: [string]
+	body: [AST_node]
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "lambda:"
+		out += " type " + string(type)
+		out += ", arg_names " + string(arg_names)
+		out += "\n"
+		for(body) __c:
+			out += __c.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		for(body) __c:
+			__childs.push(__c)
+		return __childs
+	def get_type() -> type_struct:
+		return type
 class AST_if : AST_node
 	type: type_struct = type_struct(NIL)
 	body: [AST_node]

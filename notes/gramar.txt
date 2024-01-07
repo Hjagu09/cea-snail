@@ -11,8 +11,13 @@ ret : "return" expr
 if_else : "if" logic "{" "\n"? program }"
           ("\n"? "else" "{" "\n"? program "}")?
 
-arg : IDENT ":" IDENT
-func : "def" IDENT "(" (arg ("," arg)*) ")" "->" IDENT "{" "\n"? program "}"
+arg : IDENT ":" type
+func : "def" IDENT "(" (arg ("," arg)*)? ")" arrow type "{" "\n"? program "}"
+arrow : "->"|"→"
+
+type : IDENT
+     | "fn" (type ("," type)*)? type
+     | "(" type ")" // vet inte om jag gör den här
 
 logic : comp ("and" logic)*
       | comp ("or" logic)*
@@ -40,7 +45,8 @@ value : INT
       | "true" 
       | "false" 
       | "not" value
-      | value "(" args? ")"
+      | call
+call : value "(" args? ")" ((arg ("," arg)*)? arrow type "{" program "}")?
 args : expr ("," expr)*
 
 

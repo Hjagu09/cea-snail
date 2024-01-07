@@ -35,10 +35,12 @@ enum token_types:
 	IF,
 	ELSE,
 	RET,
+	FN,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
 let pow_3 = string_to_unicode("³")[0]
+let small_arrow_str = string_to_unicode("→")[0]
 
 def token_type_string(type: int) -> string:
 	return switch type:
@@ -77,6 +79,7 @@ def token_type_string(type: int) -> string:
 		case AROW: "AROW"
 		case IF: "IF"
 		case ELSE: "ELSE"
+		case FN: "FN"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -146,6 +149,7 @@ class lexer:
 		if pos + offset >= prog.length():
 			return token{EOF, pos + offset, 1}
 		
+		// testa första bokstaven och se vilken kategori vi faller in i
 		var tok = switch prog.at(pos + offset):
 			case '\'', '\"':
 				let delim = prog.at(pos + offset)
@@ -180,6 +184,9 @@ class lexer:
 					token {AROW, pos + offset - 2 , 2}
 				else:
 					token {MINUS, pos + offset - 1, 1}
+			case small_arrow_str:
+				offset++
+				token {AROW, pos + offset - 1, 1}
 			case '+':
 				offset++
 				token {PLUS, pos + offset - 1, 1}
@@ -285,6 +292,8 @@ class lexer:
 					token{ELSE, start, len}
 				case "return":
 					token{RET, start, len}
+				case "fn": // lambda type keyword
+					token{FN, start, len}
 				default:
 					// if nothing matched it's a identifeier
 					string_token {IDENT, start, len, name}
