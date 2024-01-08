@@ -37,7 +37,7 @@ class cpp_code_builder:
 		code_line("}}")
 
 	def cvar(name, type):
-		prots.push("{type} {name}")
+		prots.push("{type} {name};")
 	def code_line(line):
 		code.push(line)
 	def get_code():
@@ -233,7 +233,11 @@ class to_cpp : codegen
 		return "___identifier___{node.name}___"
 	def visit_var_decl(node: AST_decl) -> string:
 		print("visit_var_decl")
-		builder.code_line("{type_to_cpp(node.type)} ___identifier___{node.name}___ = {eval(node.body)};")
+		if builder.main:
+			builder.cvar(builder.cpp_ident(node.name), type_to_cpp(node.type))
+			builder.code_line("___identifier___{node.name}___ = {eval(node.body)};")
+		else:
+			builder.code_line("{type_to_cpp(node.type)} ___identifier___{node.name}___ = {eval(node.body)};")
 		return "___identifier___{node.name}___"
 
 	def visit_call(node: AST_call) -> string:

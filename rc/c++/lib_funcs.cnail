@@ -3,3 +3,4 @@ def int_to_str(x: int) -> str { }
 def float_to_str(x: float) -> str { }
 def int_to_float(x: int) -> float { }
 def for(low: int, high: int, action: fn int nil) -> nil { }
+def input(promt: str) -> str { }

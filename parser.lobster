@@ -236,7 +236,7 @@ class parser:
 
 	def args_list() -> [AST_node]?:
 		var next = lexer.peek()
-		if next != nil and next.type != lex.RPAR:
+		if next != nil and next.type != lex.RPAR and next.type != lex.PIPE:
 			let args = []
 			var arg = top_expr()
 			if arg == nil:

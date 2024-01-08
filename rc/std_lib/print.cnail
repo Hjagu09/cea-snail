@@ -1,0 +1,18 @@
+def print_int(x: int) -> nil {
+	print(int_to_str(x))
+}
+def print_float(x: float) -> nil {
+	print(float_to_str(x))
+}
+
+let pprint_deapth = 1
+def pprint(x: str) -> nil {
+	print("|" * pprint_deapth + x)
+}
+def pprint_inc(body: fn nil) -> nil {
+	pprint("\\")
+	pprint_deapth = pprint_deapth + 1
+	body()
+	pprint_deapth = pprint_deapth - 1
+	pprint("/")
+}

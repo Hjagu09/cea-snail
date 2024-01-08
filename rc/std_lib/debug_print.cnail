@@ -1,7 +1,0 @@
-def print_int(x: int) -> nil {
-	print(int_to_str(x))
-}
-
-def print_float(x: float) -> nil {
-	print(float_to_str(x))
-}
