@@ -52,4 +52,5 @@ class ret_pass: ast_pass
 				if func_ret_type != this_ret_type:
 					error("wrong return type", node)
 				true
-			default: false
+			default:
+				false

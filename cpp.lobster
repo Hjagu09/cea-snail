@@ -93,8 +93,8 @@ class to_cpp : codegen
 		print("internalt codegen cpp error, {node.str()}")
 
 	def load_std_lib():
-		let includes = scan_folder("./rc/c++/include") // what headers to include
-		let std_libs = scan_folder("./rc/c++/lib/") // other code that may use those headers
+		let includes = scan_folder(command_line_arguments()[3] + "/rc/c++/include") // what headers to include
+		let std_libs = scan_folder(command_line_arguments()[3] + "/rc/c++/lib/") // other code that may use those headers
 		guard includes != nil:
 			print("can\'t find std_include")
 			return from program
@@ -102,11 +102,12 @@ class to_cpp : codegen
 			print("can\'t find std_lib")
 			return from program
 		for(includes) include_file_name:
-			let include = read_file("./rc/c++/include/" + include_file_name)
+			// cmd line arg 3 är var vi ör
+			let include = read_file(command_line_arguments()[3] + "/rc/c++/include/" + include_file_name)
 			assert include != nil
 			builder.include(include)
 		for(std_libs) include_file_name:
-			let include = read_file("./rc/c++/lib/" + include_file_name)
+			let include = read_file(command_line_arguments()[3] + "/rc/c++/lib/" + include_file_name)
 			assert include != nil
 			builder.include(include)
 		

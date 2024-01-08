@@ -1,14 +1,14 @@
 namespace pre
 
 def get_stdlib_code() -> string:
-	let stdlib_files = scan_folder("./rc/std_lib/")
+	let stdlib_files = scan_folder(command_line_arguments()[3] + "/rc/std_lib/")
 	guard stdlib_files != nil:
 		print("can not find stdlib (./rc/std_lib/)")
 		return from program
 	
 	var stdlib = ""
 	for(stdlib_files) file:
-		let content = read_file("./rc/std_lib/" + file)
+		let content = read_file(command_line_arguments()[3] + "/rc/std_lib/" + file)
 		assert content != nil
 		stdlib += content
 	return stdlib

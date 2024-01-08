@@ -8,26 +8,12 @@ import ret_pass
 import pre_procces
 import types
 
-var prog = read_file("main.cnail")
+var prog = read_file(command_line_arguments()[0])
 guard prog:
-	print("create main.cnail")
+	print("input file does not exist")
 prog = pre.pre_procces(prog)
 
-let cmd_raw = command_line_arguments()
-var cmd: string = ""
-let args = []
-if cmd_raw.length == 1:
-	cmd = cmd_raw[0]
-	for(cmd) arg:
-		if arg == '-':
-			args.push(true)
-		elif arg == '_':
-			args.push(false)
-		else:
-			print("invalid arg string")
-			return from program
-
-let debug = args[0]
+let debug = command_line_arguments()[2] == "-"
 if debug:
 	print(prog)
 	print("----------")
@@ -74,4 +60,10 @@ let cgen = codegen.to_cpp{root}
 let cpp_code = cgen.generate().get_code()
 if debug:
 	print("```\n{cpp_code}\n```")
-write_file("a.out.cpp", cpp_code)
+if write_file(command_line_arguments()[1], cpp_code, 0, 1):
+	if debug:
+		print("c++ code writen to {command_line_arguments()[1]}")
+else:
+	print("could not write output to {command_line_arguments()[1]}")
+	print("compilation faild")
+	set_exit_code(3)

@@ -1,3 +1,4 @@
-build/*
+.build/*
 a.out
 a.out.cpp
+./notes/exampels/a.out/

@@ -1,6 +1,10 @@
-void EXPOSE(print)(std::string str)
+void EXPOSE(print)(std::string x)
 {
-	std::cout << str << std::endl;
+	#if defined(__EMSCRIPTEN__)
+	output(&x[0], x.length());
+	#else
+	std::cout << x << std::endl;
+	#endif
 }
 
 void EXPOSE(for)(int low, int high, std::function<void(int)> action)

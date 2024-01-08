@@ -264,7 +264,7 @@ constructor type_pass(new_scope):
 	return type_pass{ new_scope }
 
 def std_lib_funcs() -> scope:
-	let file = read_file("./rc/c++/lib_funcs.cnail")
+	let file = read_file(command_line_arguments()[3] + "/rc/c++/lib_funcs.cnail")
 	guard file:
 		print("can not read ./rc/c++/lib_funcs.cnail")
 		return from program

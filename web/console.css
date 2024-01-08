@@ -1,0 +1,33 @@
+.terminal{
+	background: black;
+	color: white;
+	overflow: hidden;
+}
+
+.line{
+	width: 100%;
+}
+
+
+.terminal input{
+	width: 100%;
+	height: 100%;
+	border: none;
+	background: black;
+	color: white;
+	outline: none;
+}
+
+#promt {
+	width: 100%;
+	color: #99BD75
+}
+
+#history {
+	width: 100%;
+}
+
+html {
+	background: black;
+	font-family: 'Ubuntu Mono', monospace;
+}
