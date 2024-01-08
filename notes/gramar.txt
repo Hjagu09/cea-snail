@@ -1,10 +1,10 @@
 program -> (expr ("\n"? expr)*)?
 
 expr : logic
-     | asig
      | func
      | if_else
      | ret
+     | declr
 
 ret : "return" expr
 
@@ -46,8 +46,9 @@ value : INT
       | "false" 
       | "not" value
       | call
+      | IDENT "=" expr
 call : value "(" args? ")" ((arg ("," arg)*)? arrow type "{" program "}")?
 args : expr ("," expr)*
 
 
-asig : "let" IDENT "=" expr
+declr : "let" IDENT "=" expr

@@ -51,6 +51,7 @@ class type_pass : ast_pass
 			case AST_if: visit_if(node, error)
 			case AST_else: visit_else(node, error)
 			case AST_lambda: visit_lambda(node, error)
+			case AST_asig: visit_asig(node, error)
 			case AST_ret:
 				let _ = visit(node.body, error)
 				type_struct(UNSET)
@@ -195,6 +196,19 @@ class type_pass : ast_pass
 		node.type = type
 		return type
 
+	def visit_asig(node: AST_asig, error) -> type_struct:
+		let type = visit(node.body, error)
+		let var_type = current_scope.get(node.name)
+		 // detta inebär även att type inte är UNSET ↓
+		if var_type == UNSET:
+			error("unknown identifeier", node)
+			return type_struct(UNSET)
+		elif var_type != type:
+			error("type doesn\'t match variable type", node)
+			return type_struct(UNSET)
+		node.type = type
+		return type
+
 	def visit_call(node: AST_call, error) -> type_struct:
 		guard node.func is AST_var:
 			error("can only call functions", node.func)
@@ -220,25 +234,29 @@ class type_pass : ast_pass
 
 	def visit_lambda(node: AST_lambda, error) -> type_struct:
 		current_scope.scope():
+			print("==============lambda============")
 			assert node.type.func
 			for(node.arg_names.length()) i:
 				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
 			for(node.body) child:
 				let _ = visit(child, error)
 				pass()
-		current_scope.print_scope()
+			current_scope.print_scope()
+			print("============end lambda==========")
 		return node.type
 
 	def visit_func(node: AST_func_decl, error) -> type_struct:
 		current_scope.set(node.name, node.type)
 		current_scope.scope():
+			print("=============func===============")
 			for(node.arg_names.length()) i:
 				assert node.type.func
 				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
 			for(node.body) child:
 				let _ = visit(child, error)
 				pass()
-		current_scope.print_scope()
+			current_scope.print_scope()
+			print("===========end func=============")
 		return type_struct(UNSET)
 
 	def visit_if(node, error) -> type_struct:

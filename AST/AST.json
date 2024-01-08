@@ -25,6 +25,7 @@
 		{ "name": "not", "childs": [["body"]], "const": [["type", "type_struct", "type_struct(BOOL)"]]},
 		{ "name": "call", "childs": [["func"], ["args", "*node"]], "const": [["type", "type_struct", "type_struct(UNSET)"]]},
 		{ "name": "decl", "childs": [["body"]], "const": [["name", "string"], ["type", "type_struct", "type_struct(NIL)"]]},
+		{ "name": "asig", "childs": [["body"]], "const": [["name", "string"], ["type", "type_struct", "type_struct(NIL)"]]},
 		{ "name": "func_decl", "childs": [["body", "*node"]], "const": [["name", "string"], ["type", "type_struct"], ["arg_names", "[string]"]]},
 		{ "name": "lambda", "childs": [["body", "*node"]], "const": [["type", "type_struct"], ["arg_names", "[string]"]]},
 		{ "name": "if", "childs": [["body", "*node"], ["condition"], ["else_part", "node?"]], "const": [["type", "type_struct", "type_struct(NIL)"]]},

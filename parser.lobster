@@ -191,6 +191,13 @@ class parser:
 		let next = lexer.peek()
 		if next != nil and next.type == lex.LPAR: // Function call
 			return func_call(val)
+		elif next != nil and next.type == lex.EQUAL: // asignment
+			lexer.next() // eat =
+			let body = top_expr()
+			guard body:
+				return nil
+			assert val is AST_var
+			return AST_asig {val.name, body}
 		else:
 			return val
 	

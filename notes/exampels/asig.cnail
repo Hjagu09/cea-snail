@@ -1,0 +1,8 @@
+def foo() -> nil{
+	let x = 1
+	for(0, 10 | i: int → nil) {
+		print_int(x = x * 2)
+	}
+}
+
+foo()

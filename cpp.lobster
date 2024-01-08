@@ -159,6 +159,7 @@ class to_cpp : codegen
 			case AST_else: visit_else(node)
 			case AST_ret: visit_return(node)
 			case AST_lambda: visit_lambda(node)
+			case AST_asig: visit_asig(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -301,3 +302,7 @@ class to_cpp : codegen
 
 	def visit_return(node: AST_ret) -> string:
 		return "return {eval(node.body)}"
+
+	def visit_asig(node: AST_asig) -> string:
+		builder.code_line("{builder.cpp_ident(node.name)} = {eval(node.body)};")
+		return builder.cpp_ident(node.name)
