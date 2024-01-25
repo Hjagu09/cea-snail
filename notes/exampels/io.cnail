@@ -1,7 +1,14 @@
 let name = input("What is your name? ")
-pprint("Hello " + name + "!")
-if name == "Hjalmar" {
-	pprint_inc(| → nil) {
-		pprint("I love you <3")
+
+def print_name() -> nil {
+	pprint_action("Hello " + name + "!")
+	if name == "Hjalmar" {
+		pprint_inc(| → nil) {
+			pprint("I love you <3")
+		}
 	}
 }
+
+print_name()
+pprint_lines = false
+print_name()

@@ -11,7 +11,6 @@ enum token_types:
 	LPAR,
 	RPAR,
 	IDENT,
-	LF,
 	STRING_LITERAL,
 	EQUAL_EQUAL,
 	NOT_EQUAL,
@@ -57,7 +56,6 @@ def token_type_string(type: int) -> string:
 		case IDENT: "IDENT"
 		case STRING_LITERAL: "STRING_LITERAL"
 		case EOF: "EOF"
-		case LF: "LF"
 		case EQUAL_EQUAL: "EQUAL_EQUAL"
 		case RET: "RET"
 		case NOT_EQUAL: "NOT_EQUAL"
@@ -253,16 +251,9 @@ class lexer:
 			case ':':
 				offset++
 				token {COLLON, pos + offset - 1, 1}
-			case ' ', '\t':
+			case ' ', '\t', '\n':
 				offset++
 				return gen_next_token(move, offset)
-			case '\n':
-				let start = offset + pos
-				while (prog.at(pos + offset) == '\n' or 
-					prog.at(pos + offset) == ' ' or
-					prog.at(pos + offset) == '\t'):
-					offset++
-				token {LF, start, 1}
 			default:
 				nil
 		
@@ -386,6 +377,9 @@ class lexer:
 				next()
 			set_exit_code(1)
 			return from program // FIXME
+		else:
+			set_exit_code(2)
+			return from program // FIXME
 		
 
 	def next() -> token?:
@@ -403,10 +397,7 @@ class lexer:
 		if tok != nil and tok.type == type:
 			return true, tok
 		elif tok != nil:
-			if tok.type != LF:
-				this.error(error, tok.offset, tok.length, true)
-			else:
-				this.error(error + " (newline)", tok.offset, tok.length + 1, true)
+			this.error(error, tok.offset, tok.length, true)
 		else:
 			print("\nERROR: {error}")
 		return false, tok

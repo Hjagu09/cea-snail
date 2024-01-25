@@ -1,5 +1,5 @@
-std::string repeat(size_t n, const std::string& str){
-	if (n == 0 || str.empty()) return {};
+std::string repeat(int n, const std::string& str){
+	if (n <= 0 || str.empty()) return {};
 	if (n == 1) return str;
 	const auto period = str.size();
 	if (period == 1) return std::string(n, str.front());

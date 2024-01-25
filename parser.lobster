@@ -22,10 +22,6 @@ class parser:
 				return AST_root{exprs}
 
 			if not first:
-				let err = not lexer.consume(lex.LF, "expected newline after expresion")
-				if err:
-					has_error = true
-					return nil
 				let next_2 = lexer.peek()
 				if next_2 != nil and next_2.type == lex.EOF:
 					return AST_root{exprs}
@@ -162,6 +158,7 @@ class parser:
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
 				val = AST_float_literal {tok.value}
 			elif tok.type == lex.IDENT and tok is lex.string_token:
+				print("====identifier: {tok.value}====")
 				val = AST_var{tok.value}
 			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
 				val = AST_string_literal{tok.value}
@@ -192,10 +189,12 @@ class parser:
 		if next != nil and next.type == lex.LPAR: // Function call
 			return func_call(val)
 		elif next != nil and next.type == lex.EQUAL: // asignment
+			print("====asignment=====")
 			lexer.next() // eat =
 			let body = top_expr()
 			guard body:
 				return nil
+			body.str().print()
 			assert val is AST_var
 			return AST_asig {val.name, body}
 		else:
@@ -336,9 +335,7 @@ class parser:
 		}
 
 	def block() -> [AST_node]:
-		lexer.optional(lex.LF)
 		lexer.consume(lex.LCURLPAR, "expected \'\{\' at begining of block")
-		lexer.optional(lex.LF)
 		let statments = []
 		while true:
 			let tok = lexer.peek()
@@ -347,7 +344,6 @@ class parser:
 				return statments
 			else:
 				let statment = top_expr()
-				lexer.consume(lex.LF, "expected line fead after statment")
 				guard statment != nil:
 					return []
 				statments.push(statment)
@@ -375,9 +371,6 @@ class parser:
 			// detta vet vi
 			assert condition
 		
-			// kolla efter else
-			// är nil om det inte fanns
-			lexer.optional(lex.LF)
 			let next = if_else()
 			
 			// generara node
@@ -457,10 +450,7 @@ class parser:
 	def error(e, token):
 		has_error = true
 		if token != nil:
-			if token.type != lex.LF:
-				lexer.error(e, token.offset, token.length, true)
-			else:
-				lexer.error(e + " (newline)", token.offset, token.length + 1, true)
+			lexer.error(e, token.offset, token.length, true)
 		else:
 			print("\nERROR: {e}")
 	def parse_error(e, offset, size):
