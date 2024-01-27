@@ -89,8 +89,10 @@ class to_cpp : codegen
 		return this
 	def get_code() -> string:
 		return builder.get_code()
-	def error(node):
-		print("internalt codegen cpp error, {node.str()}")
+	def error_codegen(node):
+		log("internalt codegen cpp error, {node.str()}", CODEGEN_LOG)
+		print("unknown error in codegen, aborting")
+		return from program
 
 	def load_std_lib():
 		let includes = scan_folder(command_line_arguments()[3] + "/rc/c++/include") // what headers to include
@@ -117,13 +119,13 @@ class to_cpp : codegen
 			for(node.body) child:
 				builder.code_line("{eval(child)};")
 		else:
-			error(node)
+			error_codegen(node)
 
 	def visit_expr(node: AST_node) -> string:
 		if node is AST_expr:
 			return eval(node.body)
 		else:
-			error(node)
+			error_codegen(node)
 			return "/*ERROR*/"
 
 	def eval(node: AST_node, new_builder: cpp_code_builder? = nil) -> string:
@@ -166,7 +168,7 @@ class to_cpp : codegen
 				else:
 					"false"
 			default:
-				error(node)
+				error_codegen(node)
 				"/* ERROR */"
 		if new_builder :
 			builder = old_builder
@@ -232,7 +234,7 @@ class to_cpp : codegen
 	def visit_var_cgen(node: AST_var) -> string:
 		return "___identifier___{node.name}___"
 	def visit_var_decl(node: AST_decl) -> string:
-		print("visit_var_decl")
+		log("visit_var_decl", CODEGEN_LOG)
 		if builder.main:
 			builder.cvar(builder.cpp_ident(node.name), type_to_cpp(node.type))
 			builder.code_line("___identifier___{node.name}___ = {eval(node.body)};")

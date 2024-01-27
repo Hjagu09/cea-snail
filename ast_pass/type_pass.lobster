@@ -56,7 +56,7 @@ class type_pass : ast_pass
 				let _ = visit(node.body, error)
 				type_struct(UNSET)
 			default:
-				print("type_pass: unknown ast type {node}")
+				log("type_pass: unknown ast type {node}", CODE_PASS_LOG)
 				return type_struct(UNSET)
 
 	def visit_op(node, error) -> type_struct:
@@ -229,12 +229,12 @@ class type_pass : ast_pass
 					error("wrong type for function argument {string(i)}", node)
 					return type_struct(UNSET)
 			node.type = type.func.return_type
-			print("ret type: {type.func.return_type} = {node.type}; {node.func.name}")
+			log("ret type: {type.func.return_type} = {node.type}; {node.func.name}", CODE_PASS_LOG)
 			return type.func.return_type
 
 	def visit_lambda(node: AST_lambda, error) -> type_struct:
 		current_scope.scope():
-			print("==============lambda============")
+			log("==============lambda============", CODE_PASS_LOG)
 			assert node.type.func
 			for(node.arg_names.length()) i:
 				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
@@ -242,13 +242,13 @@ class type_pass : ast_pass
 				let _ = visit(child, error)
 				pass()
 			current_scope.print_scope()
-			print("============end lambda==========")
+			log("============end lambda==========", CODE_PASS_LOG)
 		return node.type
 
 	def visit_func(node: AST_func_decl, error) -> type_struct:
 		current_scope.set(node.name, node.type)
 		current_scope.scope():
-			print("=============func===============")
+			log("=============func===============", CODE_PASS_LOG)
 			for(node.arg_names.length()) i:
 				assert node.type.func
 				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
@@ -256,7 +256,7 @@ class type_pass : ast_pass
 				let _ = visit(child, error)
 				pass()
 			current_scope.print_scope()
-			print("===========end func=============")
+			log("===========end func=============", CODE_PASS_LOG)
 		return type_struct(UNSET)
 
 	def visit_if(node, error) -> type_struct:
@@ -284,7 +284,7 @@ constructor type_pass(new_scope):
 def std_lib_funcs() -> scope:
 	let file = read_file(command_line_arguments()[3] + "/rc/c++/lib_funcs.cnail")
 	guard file:
-		print("can not read ./rc/c++/lib_funcs.cnail")
+		log("can not read ./rc/c++/lib_funcs.cnail", CODE_PASS_LOG)
 		return from program
 	let lexer = lex.lexer{ file }
 	let parser = par.parser{ lexer }
@@ -294,11 +294,11 @@ def std_lib_funcs() -> scope:
 		return from program
 	let type_reader = type_pass( scope{ } )
 	type_reader.analyse(root) e, node:
-		print("ERROR IN LIB_FUNCS: [{e}]: {node}")
+		log("ERROR IN LIB_FUNCS: [{e}]: {node}", CODE_PASS_LOG)
 		return from program
-	print("-----------------\n    std lib funcs")
+	log("-----------------\n    std lib funcs", CODE_PASS_LOG)
 	type_reader.current_scope.print_scope()
-	print("=================")
+	log("=================", CODE_PASS_LOG)
 	return type_reader.current_scope
 
 constructor type_pass():

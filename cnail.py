@@ -28,10 +28,12 @@ parser.add_argument(
 parser.add_argument(
 	"-d",
 	"--debug",
-	action="store_true",
+	action="store",
 	dest="debug",
-	default=False,
-	help="debug compiler"
+	default=[],
+	choices=["other", "lexer", "parser", "pass", "codegen", "all"],
+	help="compiler debug options for difrent sub systems",
+	nargs="+"
 )
 parser.add_argument(
 	"-o",
@@ -51,8 +53,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-debug = args.debug
-
+debug = "other" in args.debug or "all" in args.debug
 source = args.filename.resolve(True)
 
 output = Path("a.out") if args.output is None else args.output
@@ -67,13 +68,23 @@ if debug:
 
 output_cpp = (script / "./.build/a.out.cpp").resolve()
 
-argend = "_"
-if debug:
-	argend = "-"
+argend = ""
+for system in ["other", "lexer", "parser", "pass", "codegen"]:
+	if system in args.debug:
+		argend += "-"
+	else:
+		argend += "_"
+if "all" in args.debug:
+	argend = "-----"
 
 to_cpp = [
 	"lobster",
-	str(compiler),
+	str(compiler)
+]
+if not debug:
+	pass
+	# här skule jag vilja flaga för att lobster ska hålla tyst om varningar
+to_cpp += [
 	"--",
 	str(source),
 	str(output_cpp),
@@ -82,6 +93,7 @@ to_cpp = [
 ]
 if debug:
 	print(" ".join(to_cpp))
+	print("\n-------------------------")
 
 try:
 	comp = subprocess.run(to_cpp, capture_output=True, text=True)

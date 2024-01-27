@@ -1,3 +1,4 @@
+import io
 namespace lex
 
 enum token_types:
@@ -331,57 +332,6 @@ class lexer:
 			size++
 		return offset, size
 
-	def error(e: string, at: int, size:int, parser: bool = false) -> void:
-		var line_n = 1
-		var col = 1
-		for(at) i:
-			col++
-			if prog != nil and prog[i] == '\n':
-				line_n++
-				col = 1
-
-		var end_line_n = 1
-		var end_col = 1
-		for(at + size - 1) i:
-			end_col++
-			if prog != nil and prog[i] == '\n':
-				end_line_n++
-				end_col = 1
-
-		let lines = prog_string.tokenize("\n", "")
-
-		print("\nERROR: {e} at {string(line_n)}:{string(col)} to {string(end_line_n)}:{string(end_col)}")
-		
-		if end_line_n == line_n:
-			if line_n - 1 < lines.length():
-				let line = lines[line_n - 1]
-				let error_line = "    {string(line_n)}| {line}"
-				print(error_line)
-				let start_buffer = " ".repeat_string(6 + string(line_n).length())
-				let at_buffer = " ".repeat_string(col - 1)
-				let arrow_line = "-".repeat_string(size - 1)
-				var arrow = "{start_buffer}{at_buffer}^{arrow_line}"
-				print("{arrow} here")
-		else:
-			for(end_line_n - line_n + 1) l:
-				let ln = l + line_n
-				if ln - 1 < lines.length():
-					let line = lines[ln - 1]
-					let error_line = "    {string(ln)}| {line}"
-					print(error_line)
-
-		if not parser:
-			has_error = true
-			pos = at + size
-			while not eof():
-				next()
-			set_exit_code(1)
-			return from program // FIXME
-		else:
-			set_exit_code(2)
-			return from program // FIXME
-		
-
 	def next() -> token?:
 		return gen_next_token(true)
 
@@ -392,14 +342,14 @@ class lexer:
 	// error = not consume(...) or error
 	// inte:
 	// error = error or not consume(...)
-	def consume(type: int, error: string) -> bool, token?:
+	def consume(type: int, error_str: string) -> bool, token?:
 		let tok = next()
 		if tok != nil and tok.type == type:
 			return true, tok
 		elif tok != nil:
-			this.error(error, tok.offset, tok.length, true)
+			error(error_str, tok.offset, tok.length)
 		else:
-			print("\nERROR: {error}")
+			print("\nERROR: {error_str}")
 		return false, tok
 	def reset():
 		prog = nil

@@ -17,9 +17,9 @@ class scope_layer:
 	def print_scope() -> void:
 		if parent != nil:
 			parent.print_scope()
-		print("\nSCOPE:")
-		print(dict)
-		print("--------------------\n")
+		log("\nSCOPE:", CODE_PASS_LOG)
+		log(dict, CODE_PASS_LOG)
+		log("--------------------\n", CODE_PASS_LOG)
 
 class scope:
 	current_scope: scope_layer = scope_layer{nil}

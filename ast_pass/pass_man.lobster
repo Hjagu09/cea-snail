@@ -5,14 +5,14 @@ class pass_man:
 	def run_passes(node: AST_node, debug) -> [bool]:
 		let ok = []
 		if debug:
-			print("--------")
-			print("pass_man running passes:")
+			log("--------", CODE_PASS_LOG)
+			log("pass_man running passes:", CODE_PASS_LOG)
 		for(passes) p:
 			if debug:
-				print("  runing pass {p}")
+				log("  runing pass {p}", CODE_PASS_LOG)
 
-			let error_func = fn error, at:
-				print("ERROR: {error} at node \"{at.str()}\"")
+			let error_func = fn e, at:
+				error("ERROR: {e} at node \"{at.str()}\"")
 				ok.push(false)
 				return ok from run_passes
 

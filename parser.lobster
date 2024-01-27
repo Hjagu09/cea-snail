@@ -1,3 +1,4 @@
+import io
 import lexer
 import from "./AST/"
 import AST
@@ -11,7 +12,6 @@ struct func_arg:
 
 class parser:
 	lexer: lex.lexer
-	has_error: bool = false
 
 	def parse() -> AST_root?:
 		var first = true
@@ -113,13 +113,13 @@ class parser:
 		let right = add()
 		if left == nil or right == nil or op == nil:
 			if op == nil:
-				error("bad operator", op)
+				error_at_node("bad operator", op)
 			return nil
 		return switch op.type:
 			case lex.PLUS: return AST_add{left, right}
 			case lex.MINUS: return AST_sub{left, right}
 			default:
-				error("bad operator", op)
+				error_at_node("bad operator", op)
 				nil
 
 	def term() -> AST_node?:// FIXME skriv om så som comp och logic
@@ -131,20 +131,20 @@ class parser:
 		let right = term()
 		if left == nil or right == nil or op == nil:
 			if op == nil:
-				error("bad operator", op)
+				error_at_node("bad operator", op)
 			return nil
 		return switch op.type:
 			case lex.STAR: return AST_mult{left, right}
 			case lex.SLASH: return AST_div{left, right}
 			default:
-				error("bad operator", op)
+				error_at_node("bad operator", op)
 				nil
 
 	def factor() -> AST_node?:
 		let val = value()
 		let next = lexer.peek()
 		if next != nil and next.type == lex.POWER and next is lex.int_token and val != nil:
-			has_error = not lexer.consume(lex.POWER, "bad power") or has_error
+			lexer.consume(lex.POWER, "bad power")
 			return AST_pow{val, AST_int_literal{next.value}}
 		else:
 			return val
@@ -158,7 +158,7 @@ class parser:
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
 				val = AST_float_literal {tok.value}
 			elif tok.type == lex.IDENT and tok is lex.string_token:
-				print("====identifier: {tok.value}====")
+				log("====identifier: {tok.value}====", PARSER_LOG)
 				val = AST_var{tok.value}
 			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
 				val = AST_string_literal{tok.value}
@@ -177,24 +177,24 @@ class parser:
 			elif tok.type == lex.LPAR:
 				let expr = top_expr()
 				if expr != nil:
-					has_error = not lexer.consume(lex.RPAR, "unmatched parantese") or has_error
+					lexer.consume(lex.RPAR, "unmatched parantese")
 					
 					if expr != nil:
 						val = AST_group{expr}
 			else:
-				print(tok)
-				print(val)
-				error("bad value", tok)
+				log(tok, PARSER_LOG)
+				log(val, PARSER_LOG)
+				error_at_node("bad value", tok)
 		let next = lexer.peek()
 		if next != nil and next.type == lex.LPAR: // Function call
 			return func_call(val)
 		elif next != nil and next.type == lex.EQUAL: // asignment
-			print("====asignment=====")
+			log("====asignment=====", PARSER_LOG)
 			lexer.next() // eat =
 			let body = top_expr()
 			guard body:
 				return nil
-			body.str().print()
+			body.str().log(PARSER_LOG)
 			assert val is AST_var
 			return AST_asig {val.name, body}
 		else:
@@ -210,7 +210,7 @@ class parser:
 
 				// eat lambda arguments, arrow and return type
 				let lambda_args = arg_delc_list()
-				has_error = not lexer.consume(lex.AROW, "expected lambda return type specifier") or has_error
+				lexer.consume(lex.AROW, "expected lambda return type specifier")
 				let lambda_return_type = type_stmt()
 
 				// separate names and types
@@ -222,13 +222,13 @@ class parser:
 
 				// lambda efter funktionen. ska med i "args"
 				// ät också )
-				has_error = not lexer.consume(lex.RPAR, "unmatched parantese in function call") or has_error
+				lexer.consume(lex.RPAR, "unmatched parantese in function call")
 				let body = block()
 				let type = type_struct(lambda_return_type, lambda_args_types)
 				let lambda_node = AST_lambda {type, lambda_args_names, body}
 				args.push(lambda_node)
 			else:
-				has_error = not lexer.consume(lex.RPAR, "unmatched parantese in function call") or has_error
+				lexer.consume(lex.RPAR, "unmatched parantese in function call")
 			return AST_call{func_name, args}
 		else:
 			return nil
@@ -245,7 +245,6 @@ class parser:
 			while next != nil and next.type == lex.COMMA:
 				let err = not lexer.consume(lex.COMMA, "expected comma")
 				if err:
-					has_error = true
 					return nil
 				arg = top_expr()
 				if arg == nil:
@@ -259,18 +258,15 @@ class parser:
 	def asig() -> AST_node?:
 		var err = not lexer.consume(lex.LET, "expected let in variable declaration")
 		if err:
-			has_error = true
 			return nil
 		let not_ident_err, ident = lexer.consume(lex.IDENT, "expected identifier")
 		if not not_ident_err or ident == nil:
-			has_error = true
 			return nil
 		if not ident is lex.string_token:
-			error("expected string token", ident)
+			error_at_node("expected string token", ident)
 			return nil
 		err = not lexer.consume(lex.EQUAL, "expected asignment after variable declaration")
 		if err:
-			has_error = true
 			return nil
 		let expr = top_expr()
 		if expr == nil:
@@ -281,7 +277,6 @@ class parser:
 		let consume = fn(tok_type, error_str):
 			let err, tok = lexer.consume(tok_type, error_str)
 			if tok == nil or not err:
-				// has_error = true
 				return [] from arg_delc_list
 			tok
 		let args = []
@@ -291,7 +286,7 @@ class parser:
 			while not done:
 				let arg_name_tok = consume(lex.IDENT, "argument name neaded") // argument name...
 				guard arg_name_tok is lex.string_token:
-					print("token should be string_token")
+					error("token should be string_token")
 					return from program
 				let arg_name = arg_name_tok.value
 				consume(lex.COLLON, "expected type specifier for function argument")
@@ -307,14 +302,13 @@ class parser:
 		let consume = fn(tok_type, error_str):
 			let err, tok = lexer.consume(tok_type, error_str)
 			if tok == nil or not err:
-				// has_error = true
 				return nil from func
 			tok
 
 		lexer.consume(lex.DEF, "expected def") // ät "def"
 		let name = consume(lex.IDENT, "expected function name") // eat function name
 		guard name is lex.string_token:
-			print("func name should be string")
+			error("func name should be string")
 			return from program
 		consume(lex.LPAR, "expected parantese in function declaration")
 		let args = arg_delc_list()
@@ -388,7 +382,6 @@ class parser:
 		let consume = fn(tok_type, error_str):
 			let err, tok = lexer.consume(tok_type, error_str)
 			if tok == nil or not err:
-				// has_error = true
 				return nil from ret
 			tok
 		
@@ -441,18 +434,14 @@ class parser:
 						return type_struct(ret_type, [])
 					// annars är det ett fel
 					else:
-						error("expected return type", next_tok)
+						error_at_node("expected return type", next_tok)
 						return type_struct(UNSET)
 			default:
-				error("expected type", first)
+				error_at_node("expected type", first)
 				return type_struct(UNSET)
 
-	def error(e, token):
-		has_error = true
-		if token != nil:
-			lexer.error(e, token.offset, token.length, true)
-		else:
-			print("\nERROR: {e}")
-	def parse_error(e, offset, size):
-		has_error = true
-		lexer.error(e, offset, size, true)
+def error_at_node(e, token):
+	if token != nil:
+		error(e, token.offset, token.length)
+	else:
+		print("\nERROR: {e}")
