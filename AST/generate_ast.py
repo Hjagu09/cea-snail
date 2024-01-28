@@ -5,7 +5,9 @@ with open("AST.json") as file:
 	nodes = [
 		"import from \"..\"",
 		"import types",
+		"import lexer",
 		f"abstract class {data['name_pre'] + data['base']}:",
+		"\tsource_token: lex.token",
 		"\tdef get_type() -> type_struct: return type_struct(UNSET)",
 		"	def str(ind: int = 0) -> string: return \"  \".repeat_string(ind) + \"node\"",
 		"\tdef all_childs() -> [AST_node]: return []"

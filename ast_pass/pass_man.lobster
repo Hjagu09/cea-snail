@@ -12,7 +12,7 @@ class pass_man:
 				log("  runing pass {p}", CODE_PASS_LOG)
 
 			let error_func = fn e, at:
-				error("ERROR: {e} at node \"{at.str()}\"")
+				error("{e}", at.source_token.offset, at.source_token.length, false)
 				ok.push(false)
 				return ok from run_passes
 

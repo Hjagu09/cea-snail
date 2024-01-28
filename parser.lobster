@@ -14,18 +14,12 @@ class parser:
 	lexer: lex.lexer
 
 	def parse() -> AST_root?:
-		var first = true
 		let exprs = []
 		while true:
 			let next = lexer.peek()
 			if next != nil and next.type == lex.EOF:
-				return AST_root{exprs}
+				return AST_root{next, exprs}
 
-			if not first:
-				let next_2 = lexer.peek()
-				if next_2 != nil and next_2.type == lex.EOF:
-					return AST_root{exprs}
-			first = false
 			let expr = top_expr()
 			if expr == nil:
 				return nil
@@ -65,9 +59,9 @@ class parser:
 
 		switch op.type:
 			case lex.AND:
-				ret() l, r: AST_and{l, r}
+				ret() l, r: AST_and{op, l, r}
 			case lex.OR:
-				ret() l, r: AST_or{l, r}
+				ret() l, r: AST_or{op, l, r}
 			default:
 				return left
 	//  ↑
@@ -90,17 +84,17 @@ class parser:
 
 		switch op.type:
 			case lex.GREATER:
-				ret() l, r: AST_greater{l, r}
+				ret() l, r: AST_greater{op, l, r}
 			case lex.LESS:
-				ret() l, r: AST_less{l, r}
+				ret() l, r: AST_less{op, l, r}
 			case lex.GREATER_EQUAL:
-				ret() l, r: AST_greater_equal{l, r}
+				ret() l, r: AST_greater_equal{op, l, r}
 			case lex.LESS_EQUAL:
-				ret() l, r: AST_less_equal{l, r}
+				ret() l, r: AST_less_equal{op, l, r}
 			case lex.EQUAL_EQUAL:
-				ret() l, r: AST_equal{l, r}
+				ret() l, r: AST_equal{op, l, r}
 			case lex.NOT_EQUAL:
-				ret() l, r: AST_not_equal{l, r}
+				ret() l, r: AST_not_equal{op, l, r}
 			default:
 				return left
 
@@ -116,8 +110,8 @@ class parser:
 				error_at_node("bad operator", op)
 			return nil
 		return switch op.type:
-			case lex.PLUS: return AST_add{left, right}
-			case lex.MINUS: return AST_sub{left, right}
+			case lex.PLUS: return AST_add{op, left, right}
+			case lex.MINUS: return AST_sub{op, left, right}
 			default:
 				error_at_node("bad operator", op)
 				nil
@@ -134,8 +128,8 @@ class parser:
 				error_at_node("bad operator", op)
 			return nil
 		return switch op.type:
-			case lex.STAR: return AST_mult{left, right}
-			case lex.SLASH: return AST_div{left, right}
+			case lex.STAR: return AST_mult{op, left, right}
+			case lex.SLASH: return AST_div{op, left, right}
 			default:
 				error_at_node("bad operator", op)
 				nil
@@ -145,7 +139,7 @@ class parser:
 		let next = lexer.peek()
 		if next != nil and next.type == lex.POWER and next is lex.int_token and val != nil:
 			lexer.consume(lex.POWER, "bad power")
-			return AST_pow{val, AST_int_literal{next.value}}
+			return AST_pow{next, val, AST_int_literal{next, next.value}}
 		else:
 			return val
 	
@@ -154,33 +148,34 @@ class parser:
 		var val: AST_node? = nil
 		if tok != nil: // FIXME anvönd switch FIXME error: `constructor` (1st argumentet) requiers type `type_struct`
 			if tok.type == lex.INT_LITERAL and tok is lex.int_token:
-				val = AST_int_literal {tok.value}
+				val = AST_int_literal {tok, tok.value}
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
-				val = AST_float_literal {tok.value}
+				val = AST_float_literal {tok, tok.value}
 			elif tok.type == lex.IDENT and tok is lex.string_token:
 				log("====identifier: {tok.value}====", PARSER_LOG)
-				val = AST_var{tok.value}
+				val = AST_var{tok, tok.value}
 			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
-				val = AST_string_literal{tok.value}
+				val = AST_string_literal{tok, tok.value}
 			elif tok.type == lex.MINUS:
 				let next = value()
 				if next != nil:
-					val = AST_unary_sub{next}
+					val = AST_unary_sub{tok, next}
 			elif tok.type == lex.NOT:
 				let next = value()
 				if next != nil:
-					val = AST_not{next}
+					val = AST_not{tok, next}
 			elif tok.type == lex.TRUE:
-				val = AST_bool_literal{true}
+				val = AST_bool_literal{tok, true}
 			elif tok.type == lex.FALSE:
-				val = AST_bool_literal{false}
+				val = AST_bool_literal{tok, false}
 			elif tok.type == lex.LPAR:
 				let expr = top_expr()
 				if expr != nil:
-					lexer.consume(lex.RPAR, "unmatched parantese")
+					let _, par_tok = lexer.consume(lex.RPAR, "unmatched parantese")
+					guard par_tok
 					
 					if expr != nil:
-						val = AST_group{expr}
+						val = AST_group{par_tok, expr}
 			else:
 				log(tok, PARSER_LOG)
 				log(val, PARSER_LOG)
@@ -190,18 +185,20 @@ class parser:
 			return func_call(val)
 		elif next != nil and next.type == lex.EQUAL: // asignment
 			log("====asignment=====", PARSER_LOG)
-			lexer.next() // eat =
+			let equal_tok = lexer.next() // eat =
+			assert equal_tok
 			let body = top_expr()
 			guard body:
 				return nil
 			body.str().log(PARSER_LOG)
 			assert val is AST_var
-			return AST_asig {val.name, body}
+			return AST_asig {equal_tok, val.name, body}
 		else:
 			return val
 	
 	def func_call(func_name) -> AST_node?:
-		lexer.next() // consume (
+		let open_par_tok = lexer.next() // consume (
+		assert open_par_tok
 		let args = args_list() // list of args
 		if args != nil and func_name != nil:
 			let next = lexer.peek()
@@ -210,7 +207,8 @@ class parser:
 
 				// eat lambda arguments, arrow and return type
 				let lambda_args = arg_delc_list()
-				lexer.consume(lex.AROW, "expected lambda return type specifier")
+				let _, arrow_tok = lexer.consume(lex.AROW, "expected lambda return type specifier")
+				assert arrow_tok
 				let lambda_return_type = type_stmt()
 
 				// separate names and types
@@ -225,11 +223,11 @@ class parser:
 				lexer.consume(lex.RPAR, "unmatched parantese in function call")
 				let body = block()
 				let type = type_struct(lambda_return_type, lambda_args_types)
-				let lambda_node = AST_lambda {type, lambda_args_names, body}
+				let lambda_node = AST_lambda {arrow_tok, type, lambda_args_names, body}
 				args.push(lambda_node)
 			else:
 				lexer.consume(lex.RPAR, "unmatched parantese in function call")
-			return AST_call{func_name, args}
+			return AST_call{open_par_tok, func_name, args}
 		else:
 			return nil
 
@@ -271,7 +269,7 @@ class parser:
 		let expr = top_expr()
 		if expr == nil:
 			return nil
-		return AST_decl{ident.value, expr}
+		return AST_decl{ident, ident.value, expr}
 
 	def arg_delc_list() -> [func_arg]:
 		let consume = fn(tok_type, error_str):
@@ -305,7 +303,8 @@ class parser:
 				return nil from func
 			tok
 
-		lexer.consume(lex.DEF, "expected def") // ät "def"
+		let _, def_tok = lexer.consume(lex.DEF, "expected def") // ät "def"
+		assert def_tok
 		let name = consume(lex.IDENT, "expected function name") // eat function name
 		guard name is lex.string_token:
 			error("func name should be string")
@@ -322,6 +321,7 @@ class parser:
 			arg_types.push(v.type)
 			arg_names.push(v.name)
 		return AST_func_decl {
+			def_tok,
 			name.value,
 			type_struct(func_type, arg_types),
 			arg_names,
@@ -369,12 +369,13 @@ class parser:
 			
 			// generara node
 			return AST_if {
+				keyword,
 				body,
 				condition,
 				next
 			}
 		else: // if keyword.type == lex.ELSE
-			return AST_else { body }
+			return AST_else { keyword, body }
 	
 	// return statment
 	def ret() -> AST_node?:
@@ -386,13 +387,13 @@ class parser:
 			tok
 		
 		// consume "return" keyword
-		consume(lex.RET, "expected return keyword in return statment")
+		let ret_tok = consume(lex.RET, "expected return keyword in return statment")
 		// return value
 		let body = top_expr()
 		guard body:
 			return nil
 		// construct node
-		return AST_ret{ body }
+		return AST_ret{ ret_tok, body }
 	
 	// type specifier
 	def type_stmt() -> type_struct:

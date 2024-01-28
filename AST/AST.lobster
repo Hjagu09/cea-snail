@@ -1,6 +1,8 @@
 import from ".."
 import types
+import lexer
 abstract class AST_node:
+	source_token: lex.token
 	def get_type() -> type_struct: return type_struct(UNSET)
 	def str(ind: int = 0) -> string: return "  ".repeat_string(ind) + "node"
 	def all_childs() -> [AST_node]: return []

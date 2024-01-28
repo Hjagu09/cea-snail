@@ -12,7 +12,9 @@ import io
 var prog = read_file(command_line_arguments()[0])
 guard prog:
 	log("input file does not exist", OTHER_LOG)
+program_raw = prog
 prog = pre.pre_procces(prog)
+size_diff = length(prog) - length(program_raw)
 
 let debug = command_line_arguments()[2][0] == '-'
 if debug:

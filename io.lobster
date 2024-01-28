@@ -9,13 +9,16 @@ enum_flags log_types:
 
 var debug_log = INTERNAL_ERROR
 var program_raw = ""
+var size_diff = 0
 
 def log(message, type):
 	guard debug_log & type != 0
 	print(message)
 
 
-def error(e: string, at: int, size:int, tips:string? = nil) -> void:
+def error(e: string, at: int, size:int, exacte:int = true, tips:string? = nil) -> void:
+	at -= size_diff
+
 	var line_n = 1
 	var col = 1
 	for(at) i:
@@ -33,20 +36,29 @@ def error(e: string, at: int, size:int, tips:string? = nil) -> void:
 			end_col = 1
 
 	let lines = program_raw.tokenize("\n", "")
-
-	print("\nERROR: {e} at {string(line_n)}:{string(col)} to {string(end_line_n)}:{string(end_col)}")
 	
-	if end_line_n == line_n:
-		if line_n - 1 < lines.length():
-			let line = lines[line_n - 1]
-			let error_line = "    {string(line_n)}| {line}"
-			print(error_line)
-			let start_buffer = " ".repeat_string(6 + string(line_n).length())
-			let at_buffer = " ".repeat_string(col - 1)
-			let arrow_line = "-".repeat_string(size - 1)
-			var arrow = "{start_buffer}{at_buffer}^{arrow_line}"
-			print("{arrow} here")
+	if exacte:
+		print("\nERROR: {e} at {string(line_n)}:{string(col)} to {string(end_line_n)}:{string(end_col)}")
+		
+		if end_line_n == line_n:
+			if line_n - 1 < lines.length():
+				let line = lines[line_n - 1]
+				let error_line = "    {string(line_n)}| {line}"
+				print(error_line)
+				let start_buffer = " ".repeat_string(6 + string(line_n).length())
+				let at_buffer = " ".repeat_string(col - 1)
+				let arrow_line = "-".repeat_string(size - 1)
+				var arrow = "{start_buffer}{at_buffer}^{arrow_line}"
+				print("{arrow} here")
+		else:
+			for(end_line_n - line_n + 1) l:
+				let ln = l + line_n
+				if ln - 1 < lines.length():
+					let line = lines[ln - 1]
+					let error_line = "    {string(ln)}| {line}"
+					print(error_line)
 	else:
+		print("\nERROR: {e} at line {string(line_n)}")
 		for(end_line_n - line_n + 1) l:
 			let ln = l + line_n
 			if ln - 1 < lines.length():
@@ -70,6 +82,7 @@ def error(e: string, at: int, size:int, tips:string? = nil) -> void:
 		print(tips)
 	
 
+	set_exit_code(-3)
 	return from program // FIXME
 
 def error(e: string, tips:string? = nil) -> void:
@@ -90,4 +103,5 @@ def error(e: string, tips:string? = nil) -> void:
 		print(tips)
 	
 
+	set_exit_code(-3)
 	return from program // FIXME

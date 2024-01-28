@@ -136,7 +136,6 @@ class lexer:
 	prog_string: string
 	prog: [int]? = nil
 	pos: int = 0
-	has_error: bool = false
 	
 	def eof() -> bool:
 		let peek_token = peek()
@@ -159,12 +158,12 @@ class lexer:
 				let name_utf8 = []
 				while prog.at(pos + offset) != delim:
 					if prog.at(pos + offset) == '\n' or prog.at(pos + offset) == 0:
+						error(
+							"unmatched string opening ({unicode_to_string([delim])})",
+							 start_i,
+							 name_utf8.length() + 1
+						)
 						if move:
-							error(
-								"unmatched string opening ({unicode_to_string([delim])})",
-								 start_i,
-								 name_utf8.length() + 1
-							)
 							offset += 1
 							pos += offset
 						return nil
@@ -338,10 +337,6 @@ class lexer:
 	def peek() -> token?:
 		return gen_next_token(false)
 
-	// kalla altid på funktionen så här:
-	// error = not consume(...) or error
-	// inte:
-	// error = error or not consume(...)
 	def consume(type: int, error_str: string) -> bool, token?:
 		let tok = next()
 		if tok != nil and tok.type == type:
