@@ -162,6 +162,7 @@ class to_cpp : codegen
 			case AST_ret: visit_return(node)
 			case AST_lambda: visit_lambda(node)
 			case AST_asig: visit_asig(node)
+			case AST_index_op: visit_index_op(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -312,3 +313,8 @@ class to_cpp : codegen
 	def visit_asig(node: AST_asig) -> string:
 		builder.code_line("{builder.cpp_ident(node.name)} = {eval(node.body)};")
 		return builder.cpp_ident(node.name)
+
+	def visit_index_op(node: AST_index_op) -> string:
+		let name = builder.get_var_name()
+		builder.code_line("std::string {name} = std::string(1, ({eval(node.left)})[{eval(node.index)}]);")
+		return name

@@ -1,4 +1,4 @@
-program -> (expr ("\n"? expr)*)?
+program : (expr ("\n"? expr)*)?
 
 expr : logic
      | func
@@ -47,6 +47,10 @@ value : INT
       | "not" value
       | call
       | IDENT "=" expr
+      | value indexing
+
+indexing : "[" expr "]"
+
 call : value "(" args? ")" ((arg ("," arg)*)? arrow type "{" program "}")?
 args : expr ("," expr)*
 

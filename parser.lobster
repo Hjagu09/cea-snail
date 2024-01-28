@@ -152,7 +152,6 @@ class parser:
 			elif tok.type == lex.FLOAT_LITERAL and tok is lex.float_token:
 				val = AST_float_literal {tok, tok.value}
 			elif tok.type == lex.IDENT and tok is lex.string_token:
-				log("====identifier: {tok.value}====", PARSER_LOG)
 				val = AST_var{tok, tok.value}
 			elif tok.type == lex.STRING_LITERAL and tok is lex.string_token:
 				val = AST_string_literal{tok, tok.value}
@@ -184,7 +183,6 @@ class parser:
 		if next != nil and next.type == lex.LPAR: // Function call
 			return func_call(val)
 		elif next != nil and next.type == lex.EQUAL: // asignment
-			log("====asignment=====", PARSER_LOG)
 			let equal_tok = lexer.next() // eat =
 			assert equal_tok
 			let body = top_expr()
@@ -193,8 +191,20 @@ class parser:
 			body.str().log(PARSER_LOG)
 			assert val is AST_var
 			return AST_asig {equal_tok, val.name, body}
+		elif next != nil and next.type == lex.L_SQUARE_PAR: // indexing operation
+			let index = indexing()
+			guard index: return nil
+			guard tok: return nil
+			guard val: return nil
+			return AST_index_op { tok, val, index }
 		else:
 			return val
+
+	def indexing() -> AST_node?:
+		lexer.consume(lex.L_SQUARE_PAR, "expected parantese in indexing operation")
+		let output_node = top_expr()
+		lexer.consume(lex.R_SQUARE_PAR, "expected closing bracet (\']\')")
+		return output_node
 	
 	def func_call(func_name) -> AST_node?:
 		let open_par_tok = lexer.next() // consume (

@@ -37,6 +37,8 @@ enum token_types:
 	RET,
 	FN,
 	PIPE, // altså |, vet inte vad den ska kallas
+	L_SQUARE_PAR,
+	R_SQUARE_PAR,
 	EOF = -1
 
 let pow_2 = string_to_unicode("²")[0]
@@ -81,6 +83,8 @@ def token_type_string(type: int) -> string:
 		case ELSE: "ELSE"
 		case FN: "FN"
 		case PIPE: "PIPE"
+		case L_SQUARE_PAR: "L_SQUARE_PAR"
+		case R_SQUARE_PAR: "R_SQUARE_PAR"
 		default: "please add {type} to `token_type_string(type: int) -> string`"
 
 class token:
@@ -248,6 +252,12 @@ class lexer:
 			case '}':
 				offset++
 				token {RCURLPAR, pos + offset - 1, 1}
+			case '[':
+				offset++
+				token {L_SQUARE_PAR, pos + offset - 1, 1}
+			case ']':
+				offset++
+				token {R_SQUARE_PAR, pos + offset - 1, 1}
 			case ':':
 				offset++
 				token {COLLON, pos + offset - 1, 1}

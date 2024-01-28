@@ -52,6 +52,7 @@ class type_pass : ast_pass
 			case AST_else: visit_else(node, error)
 			case AST_lambda: visit_lambda(node, error)
 			case AST_asig: visit_asig(node, error)
+			case AST_index_op: visit_index_op(node, error)
 			case AST_ret:
 				let _ = visit(node.body, error)
 				type_struct(UNSET)
@@ -277,6 +278,19 @@ class type_pass : ast_pass
 				let _ = visit(child, error)
 				pass()
 		return type_struct(UNSET)
+
+	def visit_index_op(node, error) -> type_struct:
+		let left_type = visit(node.left, error)
+		let index_type = visit(node.index, error)
+		let output_type = switch left_type.type:
+			case STRING:
+				type_struct(STRING)
+			default:
+				error("can\'t index this object", node)
+		if index_type.type != INT:
+			error("index must be int", node)
+			return type_struct(UNSET)
+		return output_type
 
 constructor type_pass(new_scope):
 	return type_pass{ new_scope }
