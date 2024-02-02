@@ -558,3 +558,20 @@ class AST_index_op : AST_node
 		return __childs
 	def get_type() -> type_struct:
 		return type
+class AST_list_literal : AST_node
+	type: type_struct = type_struct(UNSET)
+	content: [AST_node]
+	def str(ind: int = 0) -> string:
+		var out = "  ".repeat_string(ind) + "list_literal:"
+		out += " type " + string(type)
+		out += "\n"
+		for(content) __c:
+			out += __c.str(ind + 1) + ""
+		return out
+	def all_childs():
+		let __childs = []
+		for(content) __c:
+			__childs.push(__c)
+		return __childs
+	def get_type() -> type_struct:
+		return type

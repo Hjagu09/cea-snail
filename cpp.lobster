@@ -63,7 +63,7 @@ class cpp_code_builder:
 		return "___identifier___{name}___"
 
 def type_to_cpp(type: type_struct) -> string:
-	return switch type.type:
+	let pure_type = switch type.type:
 		case INT: "int"
 		case STRING: "std::string"
 		case FLOAT: "double"
@@ -80,6 +80,10 @@ def type_to_cpp(type: type_struct) -> string:
 			type_str += ")>"
 			type_str
 		default: "/* ERROR unknown type (cpp.lobster 53) */"
+	if type.list:
+		return "std::vector<{pure_type}>"
+	else:
+		return pure_type
 
 class to_cpp : codegen
 	builder = cpp_code_builder{true}
@@ -163,6 +167,7 @@ class to_cpp : codegen
 			case AST_lambda: visit_lambda(node)
 			case AST_asig: visit_asig(node)
 			case AST_index_op: visit_index_op(node)
+			case AST_list_literal: visit_list(node)
 			case AST_bool_literal:
 				if node.value:
 					"true"
@@ -316,5 +321,19 @@ class to_cpp : codegen
 
 	def visit_index_op(node: AST_index_op) -> string:
 		let name = builder.get_var_name()
-		builder.code_line("std::string {name} = std::string(1, ({eval(node.left)})[{eval(node.index)}]);")
+		if node.type.list:
+			builder.code_line("const auto {name} = ({eval(node.left)})[{eval(node.index)}];")
+		else:
+			builder.code_line("const std::string {name} = std::string(1, ({eval(node.left)})[{eval(node.index)}]);")
+		return name
+
+	def visit_list(node: AST_list_literal) -> string:
+		let name = builder.get_var_name()
+		var code_line = "{type_to_cpp(node.type)} {name} = {{"
+		for (node.content) element, i:
+			if i != 0:
+				code_line += ", "
+			code_line += eval(element)
+		code_line += "}};"
+		builder.code_line(code_line)
 		return name

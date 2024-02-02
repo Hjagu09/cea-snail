@@ -175,6 +175,19 @@ class parser:
 					
 					if expr != nil:
 						val = AST_group{par_tok, expr}
+			elif tok.type == lex.L_SQUARE_PAR:
+				let values: [AST_node] = []
+				var run = true
+				while run:
+					let element = top_expr()
+					guard element: return nil
+					values.push(element)
+					lexer.optional(lex.COMMA)
+					let next_tok = lexer.peek()
+					if next_tok != nil and next_tok.type == lex.R_SQUARE_PAR:
+						run = false
+						lexer.next()
+				return AST_list_literal{ tok, values }
 			else:
 				log(tok, PARSER_LOG)
 				log(val, PARSER_LOG)

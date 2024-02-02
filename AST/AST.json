@@ -31,7 +31,8 @@
 		{ "name": "if", "childs": [["body", "*node"], ["condition"], ["else_part", "node?"]], "const": [["type", "type_struct", "type_struct(NIL)"]]},
 		{ "name": "else", "childs": [["body", "*node"]], "const": [["type", "type_struct", "type_struct(NIL)"]]},
 		{ "name": "ret", "childs": [["body"]], "const": [["type", "type_struct", "type_struct(NIL)"]]},
-		{ "name": "index_op", "childs": [["left"], ["index"]], "const": [["type", "type_struct", "type_struct(UNSET)"]]}
+		{ "name": "index_op", "childs": [["left"], ["index"]], "const": [["type", "type_struct", "type_struct(UNSET)"]]},
+		{ "name": "list_literal", "childs": [["content", "*node"]], "const": [["type", "type_struct", "type_struct(UNSET)"]]}
 	],
 	"base": "node",
 	"name_pre": "AST_"

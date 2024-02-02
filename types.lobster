@@ -16,6 +16,7 @@ class func_class:
 struct type_struct:
 	type: int // typ från ovan --^
 	func: func_class?
+	list: bool
 	def eq(comp_type: int) -> bool:
 		return comp_type == type
 	def eq(comp: type_struct) -> bool: 
@@ -26,9 +27,11 @@ struct type_struct:
 		return eq(comp)
 
 constructor type_struct(rtype: type_struct, argumentents: [type_struct]):
-	return type_struct{FUNC, func_class{rtype, argumentents}}
+	return type_struct{FUNC, func_class{rtype, argumentents}, false}
 constructor type_struct(type: int):
-	return type_struct{type, nil}
+	return type_struct{type, nil, false}
+constructor type_struct(type: int, list: bool):
+	return type_struct{type, nil, list}
 
 def is_num(type):
 	return switch type.type:
@@ -43,5 +46,10 @@ def string_to_type(type_string: string):
 		case "bool": BOOL
 		case "float": FLOAT
 		case "str": STRING
+		case "[int]": INT
+		case "[nil]": NIL
+		case "[bool]": BOOL
+		case "[float]": FLOAT
+		case "[str]": STRING
 		default: UNSET
-	return type_struct(type_int)
+	return type_struct(type_int, type_string.find_string("[") > 0)

@@ -53,6 +53,7 @@ class type_pass : ast_pass
 			case AST_lambda: visit_lambda(node, error)
 			case AST_asig: visit_asig(node, error)
 			case AST_index_op: visit_index_op(node, error)
+			case AST_list_literal: visit_list(node, error)
 			case AST_ret:
 				let _ = visit(node.body, error)
 				type_struct(UNSET)
@@ -282,15 +283,32 @@ class type_pass : ast_pass
 	def visit_index_op(node, error) -> type_struct:
 		let left_type = visit(node.left, error)
 		let index_type = visit(node.index, error)
-		let output_type = switch left_type.type:
-			case STRING:
-				type_struct(STRING)
-			default:
-				error("can\'t index this object", node)
+		var output_type = type_struct(UNSET)
+		if not left_type.list:
+			output_type = switch left_type.type:
+				case STRING:
+					type_struct(STRING)
+				default:
+					error("can\'t index this object", node)
+		else:
+			output_type = left_type
+			output_type.list = false
 		if index_type.type != INT:
 			error("index must be int", node)
 			return type_struct(UNSET)
+		node.type = left_type
 		return output_type
+
+	def visit_list(node: AST_list_literal, error) -> type_struct:
+		if node.content.length() == 0:
+			error("empty list literal not allowed", node)
+		let list_type = visit(node.content[0], error)
+		for (node.content) element:
+			if visit(element, error) != list_type:
+				error("all list element types must be equal", node)
+		list_type.list = true
+		node.type = list_type
+		return list_type
 
 constructor type_pass(new_scope):
 	return type_pass{ new_scope }

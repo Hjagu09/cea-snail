@@ -1,8 +1,13 @@
 let a = "Hello World!"
 let b = ""
-
 for (0, 12 | i: int → nil) {
 	b = b + a[11 - i]
 }
+print(b)
 
+let c = ["Hello", "", "World", "!"]
+b = ""
+for (0, 4 | i: int → nil) {
+	b = b + c[i]
+}
 print(b)
