@@ -31,7 +31,7 @@ parser.add_argument(
 	action="store",
 	dest="debug",
 	default=[],
-	choices=["other", "lexer", "parser", "pass", "codegen", "all"],
+	choices=["other", "lexer", "parser", "pass", "codegen", "all", "lobster"],
 	help="compiler debug options for difrent sub systems",
 	nargs="+"
 )
@@ -68,6 +68,7 @@ if debug:
 
 output_cpp = (script / "./.build/a.out.cpp").resolve()
 
+lobster_debug = "lobster" in args.debug
 argend = ""
 for system in ["other", "lexer", "parser", "pass", "codegen"]:
 	if system in args.debug:
@@ -75,15 +76,19 @@ for system in ["other", "lexer", "parser", "pass", "codegen"]:
 	else:
 		argend += "_"
 if "all" in args.debug:
+	lobster_debug = True
 	argend = "-----"
 
 to_cpp = [
 	"lobster",
 	str(compiler)
 ]
-if not debug:
-	pass
-	# här skule jag vilja flaga för att lobster ska hålla tyst om varningar
+if lobster_debug:
+	to_cpp += [
+		"--full-error",
+		"--runtime-stack-traces",
+		"--runtime-debug"
+	]
 to_cpp += [
 	"--",
 	str(source),

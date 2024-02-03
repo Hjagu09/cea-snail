@@ -82,7 +82,7 @@ class type_pass : ast_pass
 					op_string
 
 			if not node is AST_mult and not node is AST_add:
-				if not right.eq(left):
+				if not right == left:
 					error("can\'t {op()} two difrent types", node)
 				if not is_num(right):
 					error("can\'t {op()} non-number", node.right)
@@ -91,25 +91,26 @@ class type_pass : ast_pass
 				node.type = right
 			
 			elif node is AST_add:
-				if not right.eq(left):
+				if not right == left:
+					log("{left} != {right}", CODE_PASS_LOG)
 					error("can\'t {op()} two difrent types", node)
-				if not not is_num(right) and right.eq(STRING):
+				if not not is_num(right) and right == STRING:
 					error("can\'t {op()} non-number", node.right)
-				if not not is_num(left) and left.eq(STRING):
+				if not not is_num(left) and left == STRING:
 					error("can\'t {op()} non-number", node.left)
 				node.type = right
 
 			elif node is AST_mult:
-				if right.eq(STRING) and left.eq(INT):
+				if right == STRING and left == INT:
 					node.type_left = left
 					node.type_right = right
 					return type_struct(STRING)
-				elif right.eq(INT) and left.eq(STRING):
+				elif right == INT and left == STRING:
 					node.type_left = left
 					node.type_right = right
 					return type_struct(STRING)
 				else:
-					if not right.eq(left):
+					if not right == left:
 						error("can\'t {op()} two difrent types", node)
 					if not is_num(right):
 						error("can\'t {op()} non-number", node.right)
@@ -146,7 +147,7 @@ class type_pass : ast_pass
 			return type
 		if node is AST_not:
 			let type = visit(node.body, error)
-			if not type.eq(BOOL):
+			if not type == BOOL:
 				error("can only invert booleans", node.body)
 			return type_struct(BOOL)
 		else:
@@ -155,15 +156,15 @@ class type_pass : ast_pass
 
 	def visit_logic(node, error) -> type_struct:
 		if node is AST_or or node is AST_and:
-			if not visit(node.left, error).eq(BOOL):
+			if not visit(node.left, error) == BOOL:
 				error("can\'t and/or non bool", node.left)
-			if not visit(node.right, error).eq(BOOL):
+			if not visit(node.right, error) == BOOL:
 				error("can\'t and/or non bool", node.right)
 
 		elif node is AST_equal or node is AST_not_equal:
 			let left = visit(node.left, error)
 			let right = visit(node.right, error)
-			if not left.eq(right):
+			if not left == right:
 				error("can\'t compare two difrent types", node.right)
 
 		elif (node is AST_greater_equal or
@@ -176,7 +177,7 @@ class type_pass : ast_pass
 				error("can\'t do less/greater then comparison on non-number", node.left)
 			if not right.is_num():
 				error("can\'t do less/greater then comparison on non-number", node.right)
-			if not left.eq(right):
+			if not left == right:
 				error("can\'t compare two difrent types", node.right)
 			
 		else:
@@ -192,7 +193,7 @@ class type_pass : ast_pass
 
 	def visit_var(node: AST_var, error) -> type_struct:
 		let type = current_scope.get(node.name)
-		if type.eq(UNSET):
+		if type == UNSET:
 			error("unknown identifier", node)
 			return type_struct(UNSET)
 		node.type = type
@@ -205,7 +206,9 @@ class type_pass : ast_pass
 		if var_type == UNSET:
 			error("unknown identifeier", node)
 			return type_struct(UNSET)
-		elif var_type != type:
+		elif not var_type == type:
+			log(node.str(), CODE_PASS_LOG)
+			log("{var_type} != {type}", CODE_PASS_LOG)
 			error("type doesn\'t match variable type", node)
 			return type_struct(UNSET)
 		node.type = type
@@ -213,33 +216,35 @@ class type_pass : ast_pass
 
 	def visit_call(node: AST_call, error) -> type_struct:
 		guard node.func is AST_var:
-			error("can only call functions", node.func)
+			error("can only call functions", node)
 			return type_struct(UNSET)
 		let type = current_scope.get(node.func.name)
-		if type.type != FUNC or type.func == nil:
+		if not type is func_class:
+			log("this message is from type_pass ({node.func.name}, {type}):", CODE_PASS_LOG | PARSER_LOG)
+			log(node.str(), CODE_PASS_LOG | PARSER_LOG)
 			error("unknown identifier", node)
 			return type_struct(UNSET)
 		else:
-			guard type.func.argumentents.length() == node.args.length():
+			guard type.argumentents.length() == node.args.length():
 				error("wrong arity", node)
 				return type_struct(UNSET)
-			for(type.func.argumentents) arg, i:
+			for(type.argumentents) arg, i:
 				if i >= node.args.length:
 					error("internal arity error", node)
 					return type_struct(UNSET)
 				if not visit(node.args[i], error) == arg:
 					error("wrong type for function argument {string(i)}", node)
 					return type_struct(UNSET)
-			node.type = type.func.return_type
-			log("ret type: {type.func.return_type} = {node.type}; {node.func.name}", CODE_PASS_LOG)
-			return type.func.return_type
+			node.type = type.return_type
+			log("ret type: {type.return_type} = {node.type}; {node.func.name}", CODE_PASS_LOG)
+			return type.return_type
 
 	def visit_lambda(node: AST_lambda, error) -> type_struct:
 		current_scope.scope():
 			log("==============lambda============", CODE_PASS_LOG)
-			assert node.type.func
+			assert node.type is func_class
 			for(node.arg_names.length()) i:
-				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
+				current_scope.set(node.arg_names[i], node.type.argumentents[i])
 			for(node.body) child:
 				let _ = visit(child, error)
 				pass()
@@ -252,8 +257,8 @@ class type_pass : ast_pass
 		current_scope.scope():
 			log("=============func===============", CODE_PASS_LOG)
 			for(node.arg_names.length()) i:
-				assert node.type.func
-				current_scope.set(node.arg_names[i], node.type.func.argumentents[i])
+				assert node.type is func_class
+				current_scope.set(node.arg_names[i], node.type.argumentents[i])
 			for(node.body) child:
 				let _ = visit(child, error)
 				pass()
@@ -284,15 +289,14 @@ class type_pass : ast_pass
 		let left_type = visit(node.left, error)
 		let index_type = visit(node.index, error)
 		var output_type = type_struct(UNSET)
-		if not left_type.list:
+		if not left_type is list_class:
 			output_type = switch left_type.type:
 				case STRING:
 					type_struct(STRING)
 				default:
 					error("can\'t index this object", node)
 		else:
-			output_type = left_type
-			output_type.list = false
+			output_type = left_type.inner_type
 		if index_type.type != INT:
 			error("index must be int", node)
 			return type_struct(UNSET)
@@ -302,11 +306,11 @@ class type_pass : ast_pass
 	def visit_list(node: AST_list_literal, error) -> type_struct:
 		if node.content.length() == 0:
 			error("empty list literal not allowed", node)
-		let list_type = visit(node.content[0], error)
+		var list_type = visit(node.content[0], error)
 		for (node.content) element:
-			if visit(element, error) != list_type:
-				error("all list element types must be equal", node)
-		list_type.list = true
+			if not visit(element, error) == list_type:
+				error("all list element types must be of equal type", node)
+		list_type = list_class(list_type)
 		node.type = list_type
 		return list_type
 

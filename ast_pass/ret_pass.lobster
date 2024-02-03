@@ -30,7 +30,8 @@ class ret_pass: ast_pass
 					ret = else_ret and ret
 				ret
 			case AST_func_decl:
-				let is_void = node.type.func != nil and node.type.func.return_type == NIL
+				assert node.type is func_class
+				let is_void = node.type.return_type == NIL
 				current_func = node
 
 				var ret = false
@@ -47,8 +48,8 @@ class ret_pass: ast_pass
 					error("return neads to be in a function", node)
 					true
 				let this_ret_type = node.body.get_type()
-				assert current_func.type.func != nil
-				let func_ret_type = current_func.type.func.return_type
+				assert current_func.type is func_class
+				let func_ret_type = current_func.type.return_type
 				if func_ret_type != this_ret_type:
 					error("wrong return type", node)
 				true

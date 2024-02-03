@@ -4,34 +4,39 @@ enum types:
 	FLOAT
 	BOOL
 	FUNC
+	LIST
 	UNSET = -1
 	NIL = -2
 
-struct type_struct
-
-class func_class:
-	return_type: type_struct 
-	argumentents: [type_struct]
-
-struct type_struct:
-	type: int // typ från ovan --^
-	func: func_class?
-	list: bool
-	def eq(comp_type: int) -> bool:
-		return comp_type == type
-	def eq(comp: type_struct) -> bool: 
-		return type == comp.type and func.equal(comp.func)
+class type_struct:
+	type: int
 	def operator==(comp_type: int) -> bool:
 		return comp_type == type
-	def operator==(comp: type_struct) -> bool:
-		return eq(comp)
+	def operator==(comp_type: type_struct) -> bool:
+		return comp_type.type == type
+	def inner() -> int:
+		return type
+class func_class : type_struct
+	return_type: type_struct
+	argumentents: [type_struct]
+	def operator==(comp_type: type_struct) -> bool:
+		return comp_type is func_class and comp_type.return_type.equal(return_type) and comp_type.argumentents.equal(argumentents)
+class list_class : type_struct
+	inner_type: type_struct
+	def operator==(comp_type: type_struct) -> bool:
+		return comp_type is list_class and comp_type.inner_type.equal(inner_type)
+	def inner() -> int:
+		return inner_type.inner()
 
-constructor type_struct(rtype: type_struct, argumentents: [type_struct]):
-	return type_struct{FUNC, func_class{rtype, argumentents}, false}
-constructor type_struct(type: int):
-	return type_struct{type, nil, false}
-constructor type_struct(type: int, list: bool):
-	return type_struct{type, nil, list}
+def type_struct(rtype: type_struct, argumentents: [type_struct]):
+	return func_class{FUNC, rtype, argumentents}
+def type_struct(type: int):
+	return type_struct{type}
+def list_class(type: int):
+	return list_class{LIST, type_struct(type)}
+def list_class(type: type_struct):
+	return list_class{LIST, type}
+
 
 def is_num(type):
 	return switch type.type:
@@ -46,10 +51,13 @@ def string_to_type(type_string: string):
 		case "bool": BOOL
 		case "float": FLOAT
 		case "str": STRING
-		case "[int]": INT
+		case "[int]": INT // TODO
 		case "[nil]": NIL
 		case "[bool]": BOOL
 		case "[float]": FLOAT
 		case "[str]": STRING
 		default: UNSET
-	return type_struct(type_int, type_string.find_string("[") > 0)
+	if type_string.find_string("[") > 0:
+		return list_class(type_int)
+	else:
+		return type_struct(type_int)

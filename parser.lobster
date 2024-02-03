@@ -192,7 +192,7 @@ class parser:
 				log(tok, PARSER_LOG)
 				log(val, PARSER_LOG)
 				error_at_node("bad value", tok)
-		let next = lexer.peek()
+		var next = lexer.peek()
 		if next != nil and next.type == lex.LPAR: // Function call
 			return func_call(val)
 		elif next != nil and next.type == lex.EQUAL: // asignment
@@ -205,11 +205,15 @@ class parser:
 			assert val is AST_var
 			return AST_asig {equal_tok, val.name, body}
 		elif next != nil and next.type == lex.L_SQUARE_PAR: // indexing operation
-			let index = indexing()
-			guard index: return nil
-			guard tok: return nil
 			guard val: return nil
-			return AST_index_op { tok, val, index }
+			var output_node: AST_node = val
+			while next != nil and next.type == lex.L_SQUARE_PAR: // FIXME bodrde finnas ett bättre sät att göra detta
+				let index = indexing()
+				guard index: return nil
+				guard tok: return nil
+				output_node = AST_index_op { tok, output_node, index }
+				next = lexer.peek()
+			return output_node
 		else:
 			return val
 

@@ -63,7 +63,9 @@ class cpp_code_builder:
 		return "___identifier___{name}___"
 
 def type_to_cpp(type: type_struct) -> string:
-	let pure_type = switch type.type:
+	if type is list_class:
+		return "std::vector<{type_to_cpp(type.inner_type)}>"
+	return switch type.inner():
 		case INT: "int"
 		case STRING: "std::string"
 		case FLOAT: "double"
@@ -71,19 +73,15 @@ def type_to_cpp(type: type_struct) -> string:
 		case UNSET: "/* ERROR unset type */"
 		case NIL: "void" // kanske måste va void*
 		case FUNC:
-			assert type.func
-			var type_str = "std::function<{type_to_cpp(type.func.return_type)}("
-			for(type.func.argumentents) arg, i:
+			assert type is func_class
+			var type_str = "std::function<{type_to_cpp(type.return_type)}("
+			for(type.argumentents) arg, i:
 				if i != 0:
 					type_str += ","
 				type_str += type_to_cpp(arg)
 			type_str += ")>"
 			type_str
-		default: "/* ERROR unknown type (cpp.lobster 53) */"
-	if type.list:
-		return "std::vector<{pure_type}>"
-	else:
-		return pure_type
+		default: "/* ERROR unknown type {type} (cpp.lobster) */"
 
 class to_cpp : codegen
 	builder = cpp_code_builder{true}
@@ -267,24 +265,24 @@ class to_cpp : codegen
 	def visit_lambda(node: AST_lambda) -> string:
 		let name = builder.get_var_name()
 		var arg_list = ""
-		assert node.type.func
+		assert node.type is func_class
 		for(node.arg_names) arg_name, index:
 			if index != 0:
 				arg_list += ","
-			arg_list += "{type_to_cpp(node.type.func.argumentents[index])} {builder.cpp_ident(arg_name)}"
+			arg_list += "{type_to_cpp(node.type.argumentents[index])} {builder.cpp_ident(arg_name)}"
 	
-		builder.code_line("auto {name} = [&]({arg_list}) -> {type_to_cpp(node.type.func.return_type)} {{")
+		builder.code_line("auto {name} = [&]({arg_list}) -> {type_to_cpp(node.type.return_type)} {{")
 		for(node.body) child:
 			builder.code_line("{eval(child)};")
 		builder.code_line("}};")
 		return name
 
 	def visit_func_decl(node: AST_func_decl) -> string:
-		assert node.type.func
+		assert node.type is func_class
 		builder.func(
 			node.name,
-			node.type.func.return_type,
-			node.type.func.argumentents,
+			node.type.return_type,
+			node.type.argumentents,
 			node.arg_names
 		) func_builder:
 			for(node.body) child:
@@ -321,7 +319,7 @@ class to_cpp : codegen
 
 	def visit_index_op(node: AST_index_op) -> string:
 		let name = builder.get_var_name()
-		if node.type.list:
+		if node.type is list_class:
 			builder.code_line("const auto {name} = ({eval(node.left)})[{eval(node.index)}];")
 		else:
 			builder.code_line("const std::string {name} = std::string(1, ({eval(node.left)})[{eval(node.index)}]);")
