@@ -34,3 +34,13 @@ void EXPOSE(for)(int low, int high, std::function<void(int)> action)
 		action(i);
 	}
 }
+void EXPOSE(for_ever)(std::function<bool()> action)
+{
+	while (true)
+	{
+		if (action())
+		{
+			break;
+		}
+	}
+}

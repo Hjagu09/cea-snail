@@ -50,7 +50,7 @@ class ret_pass: ast_pass
 				let this_ret_type = node.body.get_type()
 				assert current_func.type is func_class
 				let func_ret_type = current_func.type.return_type
-				if func_ret_type != this_ret_type:
+				if not func_ret_type == this_ret_type:
 					error("wrong return type", node)
 				true
 			default:

@@ -51,7 +51,7 @@ class parser:
 
 		let ret = fn(ret_func: ret_sig):
 			lexer.next()
-			let right = comp()
+			let right = logic()
 			if left == nil or right == nil:
 				return nil
 			else:
@@ -76,7 +76,7 @@ class parser:
 
 		let ret = fn(ret_func: ret_sig):
 			lexer.next()
-			let right = add()
+			let right = comp()
 			if left == nil or right == nil:
 				return nil from comp
 			else:
@@ -193,29 +193,32 @@ class parser:
 				log(val, PARSER_LOG)
 				error_at_node("bad value", tok)
 		var next = lexer.peek()
-		if next != nil and next.type == lex.LPAR: // Function call
-			return func_call(val)
-		elif next != nil and next.type == lex.EQUAL: // asignment
-			let equal_tok = lexer.next() // eat =
-			assert equal_tok
-			let body = top_expr()
-			guard body:
-				return nil
-			body.str().log(PARSER_LOG)
-			assert val is AST_var
-			return AST_asig {equal_tok, val.name, body}
-		elif next != nil and next.type == lex.L_SQUARE_PAR: // indexing operation
-			guard val: return nil
-			var output_node: AST_node = val
-			while next != nil and next.type == lex.L_SQUARE_PAR: // FIXME bodrde finnas ett bättre sät att göra detta
+		var output_node: AST_node? = val
+		while true:
+			if next != nil and next.type == lex.LPAR: // Function call
+				output_node = func_call(output_node)
+			elif next != nil and next.type == lex.EQUAL: // asignment
+				let equal_tok = lexer.next() // eat =
+				assert equal_tok
+				let body = top_expr()
+				guard body:
+					return nil
+				body.str().log(PARSER_LOG)
+				if output_node is AST_var:
+					output_node = AST_asig {equal_tok, AST_string_literal{ equal_tok,  output_node.name }, body}
+				elif output_node is AST_index_op:
+					output_node = AST_asig {equal_tok, output_node, body}
+				else:
+					error_at_node("expected variable or list index for asignment destination", equal_tok)
+			elif next != nil and next.type == lex.L_SQUARE_PAR: // indexing operation
 				let index = indexing()
+				guard output_node: return nil
 				guard index: return nil
 				guard tok: return nil
 				output_node = AST_index_op { tok, output_node, index }
-				next = lexer.peek()
-			return output_node
-		else:
-			return val
+			else:
+				return output_node
+			next = lexer.peek()
 
 	def indexing() -> AST_node?:
 		lexer.consume(lex.L_SQUARE_PAR, "expected parantese in indexing operation")

@@ -427,18 +427,19 @@ class AST_decl : AST_node
 	def get_type() -> type_struct:
 		return type
 class AST_asig : AST_node
-	name: string
 	type: type_struct = type_struct(NIL)
+	name: AST_node
 	body: AST_node
 	def str(ind: int = 0) -> string:
 		var out = "  ".repeat_string(ind) + "asig:"
-		out += " name " + string(name)
-		out += ", type " + string(type)
+		out += " type " + string(type)
 		out += "\n"
+		out += name.str(ind + 1) + ""
 		out += body.str(ind + 1) + ""
 		return out
 	def all_childs():
 		let __childs = []
+		__childs.push(name)
 		__childs.push(body)
 		return __childs
 	def get_type() -> type_struct:

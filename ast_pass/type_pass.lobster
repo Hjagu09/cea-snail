@@ -201,18 +201,35 @@ class type_pass : ast_pass
 
 	def visit_asig(node: AST_asig, error) -> type_struct:
 		let type = visit(node.body, error)
-		let var_type = current_scope.get(node.name)
-		 // detta inebär även att type inte är UNSET ↓
-		if var_type == UNSET:
-			error("unknown identifeier", node)
-			return type_struct(UNSET)
-		elif not var_type == type:
-			log(node.str(), CODE_PASS_LOG)
-			log("{var_type} != {type}", CODE_PASS_LOG)
-			error("type doesn\'t match variable type", node)
-			return type_struct(UNSET)
-		node.type = type
-		return type
+		if node.name is AST_string_literal:
+			let var_type = current_scope.get(node.name.value)
+			 // ↓ detta inebär även att type inte är UNSET ↓
+			if var_type == UNSET:
+				error("unknown identifeier", node)
+				return type_struct(UNSET)
+			elif not var_type == type:
+				log(node.str(), CODE_PASS_LOG)
+				log("{var_type} != {type}", CODE_PASS_LOG)
+				error("type doesn\'t match variable type", node)
+				return type_struct(UNSET)
+			node.type = type
+			return type
+		else:
+			guard node.name is AST_index_op:
+				("ERROR AT:\n" + node.str()).print()
+				(node.name is AST_string_literal).print()
+				node.name.str().print()
+				return from program
+			var var_type = visit(node.name.left, error)
+			if var_type is list_class:
+				var_type = var_type.inner_type
+			if not var_type == type:
+				log(node.str(), CODE_PASS_LOG)
+				log("{var_type} != {type}", CODE_PASS_LOG)
+				error("type doesn\'t match variable type", node)
+				return type_struct(UNSET)
+			node.type = type
+			return type
 
 	def visit_call(node: AST_call, error) -> type_struct:
 		guard node.func is AST_var:

@@ -314,16 +314,20 @@ class to_cpp : codegen
 		return "return {eval(node.body)}"
 
 	def visit_asig(node: AST_asig) -> string:
-		builder.code_line("{builder.cpp_ident(node.name)} = {eval(node.body)};")
-		return builder.cpp_ident(node.name)
+		if node.name is AST_string_literal:
+			builder.code_line("{builder.cpp_ident(node.name.value)} = {eval(node.body)};")
+			return builder.cpp_ident(node.name.value)
+		elif node.name is AST_index_op:
+			builder.code_line("{eval(node.name.left)}[{eval(node.name.index)}] = {eval(node.body)};")
+			return eval(node.name.left)
+		else:
+			return "/*ERROR visit_asig() cpp.lobster*/"
 
 	def visit_index_op(node: AST_index_op) -> string:
-		let name = builder.get_var_name()
 		if node.type is list_class:
-			builder.code_line("const auto {name} = ({eval(node.left)})[{eval(node.index)}];")
+			return "({eval(node.left)})[{eval(node.index)}]"
 		else:
-			builder.code_line("const std::string {name} = std::string(1, ({eval(node.left)})[{eval(node.index)}]);")
-		return name
+			return "std::string(1, ({eval(node.left)})[{eval(node.index)}])"
 
 	def visit_list(node: AST_list_literal) -> string:
 		let name = builder.get_var_name()
