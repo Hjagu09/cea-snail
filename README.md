@@ -1,6 +1,12 @@
 cea snail
 =========
 
+**TRY IT OUT NOW!** kind of, that is a three in a row application made using cea snail. To
+write your own code you will want to downlad this repo and run `tools/cnail`. Mabey one day
+i will have a proper web interface. Lets make that a TODO (:
+
+---
+
 This is my first programing languge. The code is a a complete mess almost without comments
 and the comments that exist are writen in 50% swedish and 50% badly spelled english. Also this
 project is writen in lobster and the CLI writen in python. **The automatic c++ compilation will
