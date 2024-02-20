@@ -24,9 +24,9 @@ def output_grid() -> nil {
 
 def place(player: int) -> nil {
  if player == 1 {
-  print("X tur att spela:")
+  print("X turn:")
  } else {
-  print("O tur att spela:")
+  print("O turn:")
  }
  
  let x = str_to_int(input("x = ")) - 1
@@ -34,7 +34,7 @@ def place(player: int) -> nil {
  if grid[y][x] == 0 {
   grid[y][x] = player
  } else {
-  print("den rutan är inte tom")
+  print("You can not play there")
   place(player)
  }
 }
@@ -64,11 +64,11 @@ for_ever(| → bool) {
 
  let win = check_for_win()
  if win == 1 {
-  print("x vann")
+  print("x winns")
   return true
  }
  else {if win == 2 {
-  print("o vann")
+  print("o winns")
   return true
  }}
  return false
