@@ -1,0 +1,166 @@
+let kol = str_to_int(input("antal kolatomer i ämnet: "))
+let metanserien = [
+	"Met",
+	"Et",
+	"Prop",
+	"But",
+	"Pent",
+	"Hex",
+	"Hept",
+	"Okt",
+	"Non",
+	"Dek"
+]
+let namn = ""
+if kol <= 10 {
+	namn = metanserien[kol - 1]
+}
+
+let rader = [
+	"   ",
+	"   ",
+	"H--",
+	"   ",
+	"   "
+]
+
+for(0, kol | i: int → nil) {
+	rader[0] = rader[0] + "H  "
+	rader[1] = rader[1] + "|  "
+	rader[2] = rader[2] + "C--"
+	rader[3] = rader[3] + "|  "
+	rader[4] = rader[4] + "H  "
+}
+
+print("")
+if namn != "" {
+	print(namn + "an")
+} else{
+	print("Alkan")
+}
+for(0, 5 | i: int → nil) {
+	if i != 2 {
+		print(rader[i])
+	} else {
+		print(rader[i] + "H")
+	}
+}
+
+
+if kol != 1 {
+	print("")
+	if namn != "" {
+		print(namn + "en")
+	} else{
+		print("Alken")
+	}
+	let rader_alken = [
+		"   ",
+		"   ",
+		"H--",
+		"   ",
+		"   "
+	]
+	for(0, kol - 1 | i: int → nil) {
+		if i >= 2 {
+			rader_alken[0] = rader_alken[0] + "H  "
+			rader_alken[1] = rader_alken[1] + "|  "
+			rader_alken[2] = rader_alken[2] + "C--"
+			rader_alken[3] = rader_alken[3] + "|  "
+			rader_alken[4] = rader_alken[4] + "H  "
+		} else {
+			rader_alken[0] = rader_alken[0] + "H  "
+			rader_alken[1] = rader_alken[1] + "|  "
+			if i == 0 {
+				rader_alken[2] = rader_alken[2] + "C=="
+			} else{
+				rader_alken[2] = rader_alken[2] + "C--"
+			}
+			rader_alken[3] = rader_alken[3] + "   "
+			rader_alken[4] = rader_alken[4] + "   "
+		}
+	}
+	rader_alken[2] = rader_alken[2] + "H"
+	for(0, 5 | i: int → nil) {
+		print(rader_alken[i])
+	}
+
+	print("")
+	if namn != "" {
+		print(namn + "yn")
+	} else{
+		print("Alkyn")
+	}
+	let rader_alkyn = [
+		"   ",
+		"   ",
+		"H--",
+		"   ",
+		"   "
+	]
+	for(0, kol - 1 | i: int → nil) {
+		if i >= 2 {
+			rader_alkyn[0] = rader_alkyn[0] + "H  "
+			rader_alkyn[1] = rader_alkyn[1] + "|  "
+			rader_alkyn[2] = rader_alkyn[2] + "C--"
+			rader_alkyn[3] = rader_alkyn[3] + "|  "
+			rader_alkyn[4] = rader_alkyn[4] + "H  "
+		} else {
+			rader_alkyn[0] = rader_alkyn[0] + "   "
+			rader_alkyn[1] = rader_alkyn[1] + "   "
+			if i == 0 {
+				rader_alkyn[2] = rader_alkyn[2] + "C≡≡"
+			} else{
+				rader_alkyn[2] = rader_alkyn[2] + "C--"
+			}
+			rader_alkyn[3] = rader_alkyn[3] + "   "
+			rader_alkyn[4] = rader_alkyn[4] + "   "
+		}
+	}
+	rader_alkyn[2] = rader_alkyn[2] + "H"
+	for(0, 5 | i: int → nil) {
+		print(rader_alkyn[i])
+	}
+}
+
+print("")
+if namn != "" {
+	print(namn + "anol")
+} else{
+	print("Alkohol")
+}
+for(0, 5 | i: int → nil) {
+	if i != 2 {
+		print(rader[i])
+	} else {
+		print(rader[i] + "OH")
+	}
+}
+
+print("")
+if namn != "" {
+	print(namn + "ansyra")
+} else{
+	print("Syra")
+}
+let rader_syra = [
+	"   ",
+	"   ",
+	"H--",
+	"   ",
+	"   "
+]
+for(0, kol - 1 | i: int → nil) {
+	rader_syra[0] = rader_syra[0] + "H  "
+	rader_syra[1] = rader_syra[1] + "|  "
+	rader_syra[2] = rader_syra[2] + "C--"
+	rader_syra[3] = rader_syra[3] + "|  "
+	rader_syra[4] = rader_syra[4] + "H  "
+}
+rader_syra[0] = rader_syra[0] + "OH"
+rader_syra[1] = rader_syra[1] + "|"
+rader_syra[2] = rader_syra[2] + "C==O"
+for(0, 5 | i: int → nil) {
+	print(rader_syra[i])
+}
+
