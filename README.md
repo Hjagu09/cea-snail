@@ -1,7 +1,7 @@
 cea snail
 =========
 
-**TRY IT OUT NOW!** kind of, that is a three in a row application made using cea snail. To
+[**TRY IT OUT NOW!**](https://hjagu09.github.io/cea-snail/) kind of, that is a three in a row application made using cea snail. To
 write your own code you will want to downlad this repo and run `tools/cnail`. Mabey one day
 i will have a proper web interface. Lets make that a TODO (:
 
