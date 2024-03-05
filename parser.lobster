@@ -189,6 +189,7 @@ class parser:
 						lexer.next()
 				return AST_list_literal{ tok, values }
 			else:
+				log("ERROR", PARSER_LOG)
 				log(tok, PARSER_LOG)
 				log(val, PARSER_LOG)
 				error_at_node("bad value", tok)
@@ -375,13 +376,13 @@ class parser:
 	def if_else() -> AST_node?:
 		// IF eller ELSE...
 		let keyword = lexer.peek()
-		guard keyword and (keyword.type == lex.IF or keyword.type == lex.ELSE):
+		guard keyword and (keyword.type == lex.IF or keyword.type == lex.ELSE or keyword.type == lex.ELIF):
 			// annars är det ett fel
 			return nil
 		lexer.next() // ät if/else
 		
 		var condition = nil
-		if keyword.type == lex.IF:
+		if keyword.type == lex.IF or keyword.type == lex.ELIF:
 			// ät up kravet...
 			condition = logic()
 			// och se till att det gick vägen
@@ -391,7 +392,7 @@ class parser:
 		// huvuddelen av greningen
 		let body = block()
 
-		if keyword.type == lex.IF:
+		if keyword.type == lex.IF or keyword.type == lex.ELIF:
 			// detta vet vi
 			assert condition
 		

@@ -301,13 +301,13 @@ class to_cpp : codegen
 			return "NULL"
 		
 		// else do the else
-		eval(node.else_part)
-		return "NULL"
-	def visit_else(node: AST_else) -> string:
 		builder.code_line("else")
 		builder.block():
-			for(node.body) child:
-				builder.code_line("{eval(child)};")
+			eval(node.else_part)
+		return "NULL"
+	def visit_else(node: AST_else) -> string:
+		for(node.body) child:
+			builder.code_line("{eval(child)};")
 		return "NULL"
 
 	def visit_return(node: AST_ret) -> string:

@@ -36,6 +36,7 @@ enum token_types:
 	ELSE,
 	RET,
 	FN,
+	ELIF,
 	PIPE, // altså |, vet inte vad den ska kallas
 	L_SQUARE_PAR,
 	R_SQUARE_PAR,
@@ -57,6 +58,7 @@ def token_type_string(type: int) -> string:
 		case LPAR: "LPAR"
 		case RPAR: "RPAR"
 		case IDENT: "IDENT"
+		case ELIF: "ELIF"
 		case STRING_LITERAL: "STRING_LITERAL"
 		case EOF: "EOF"
 		case EQUAL_EQUAL: "EQUAL_EQUAL"
@@ -296,6 +298,8 @@ class lexer:
 					token{IF, start, len}
 				case "else":
 					token{ELSE, start, len}
+				case "elif":
+					token{ELIF, start, len}
 				case "return":
 					token{RET, start, len}
 				case "fn": // lambda type keyword
